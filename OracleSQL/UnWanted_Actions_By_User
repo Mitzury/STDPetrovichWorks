@@ -1,0 +1,23 @@
+WITH 
+    evt as (select substr(AnwNamMld, instr(AnwNamMld, '/') + 1, LENGTH(AnwNamMld)) as UserName, evanam from PETR_S2_PDBA.evt_t 
+        where to_char(dzins, 'DD.MM') = to_char((sysdate - 1), 'DD.MM') and AnwNamMld is not null),
+    EvaNamPickingTeFull as (select UserName from evt where evt.evanam = 'EvaNamPickingTeFull'),
+    EvaNamEscapePicking as (select UserName from evt where evt.evanam = 'EvaNamEscapePicking'),
+    LvsSrvElmExc00237 as (SELECT UserName from evt where evt.evanam = 'LvsSrvElmExc00237')
+
+select * from (
+    Select 
+    UserName as "Пользователь",
+    EvaNamEscapePicking as "Нажал выход из отбора",
+    LvsSrvElmExc00237 as "На отгрузке нажал место занято",
+    EvaNamPickingTeFull as "Нажал ТЕ полное",
+    (EvaNamPickingTeFull + EvaNamEscapePicking + LvsSrvElmExc00237) as sum
+    from (
+    select UserName,
+    (SELECT count(*) from EvaNamPickingTeFull where UserName = evt.UserName) as EvaNamPickingTeFull,
+    (SELECT count(*) from EvaNamEscapePicking where UserName = evt.UserName) as EvaNamEscapePicking,
+    (select count(*) from LvsSrvElmExc00237 where UserName = evt.UserName) as LvsSrvElmExc00237
+    from evt
+    group by UserName)
+    order by sum desc
+) where sum != 0
