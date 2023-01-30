@@ -1,0 +1,7 @@
+select plnam, substr(artid, -11,11), substr(artid1, -11,11)  from (
+select pl_t.plnam, pl_t.artid, te_t.tenam, bst_t.artid as artid1 from PETR_S3_PDBA.pl_t
+left join PETR_S3_PDBA.te_t on te_t.plnam = pl_t.plnam
+left join PETR_S3_PDBA.bst_t on bst_t.tenam = te_t.tenam
+where pl_t.artid is not null)
+where artid != artid1
+and artid1 != 'EMPTY'
