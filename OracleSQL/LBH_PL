@@ -16,3 +16,4 @@ join PETR_S2_PDBA.pl_t Pl on pl.pllng = ltt.LTTAULNG
 and pl.plbre = ltt.LTTAUBRE
 AND pl.plhoe = ltt.LTTAUHOE
 and lttnam = '1200*800*1200')
+order by plgewmax
