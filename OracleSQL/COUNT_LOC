@@ -1,0 +1,240 @@
+select   'МЕЗОНИН' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО
+          ,CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+join      PETR_S2_PDBA.te_t T
+on        P.plnam = T.tenam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('09A', '10B', '11C', '11N', '12D')
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+
+union
+
+select   'ХОЛОДНЫЙ СКЛАД (ПАЛЛЕТЫ_ЕВРО) ХРАНЕНИЕ' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО
+          ,CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+join      PETR_S2_PDBA.te_t T
+on        P.plnam = T.tenam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('06B', '06C', '06D', '07A')
+and REGEXP_SUBSTR (elbnam, '\w+', 5) = 'WH'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 900 and P.plbre < 910
+
+union
+
+select   'ХОЛОДНЫЙ СКЛАД (ПАЛЛЕТЫ_ЕВРО) ОТБОР' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО
+          ,CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('06B', '06C', '06D', '07A')
+and REGEXP_SUBSTR (elbnam, '\w+', 5) = 'KOM'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 900 and P.plbre < 910
+
+
+union 
+
+select   'ХОЛОДНЫЙ СКЛАД (ПОЛКИ)' Зона,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО
+         ,CAST (COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+join      PETR_S2_PDBA.te_t T
+on        P.plnam = T.tenam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('06B', '06C', '06D', '07A')
+and       P.PLKLANAM = 'VIRTUELL'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre < 900
+
+union
+
+select   'ХОЛОДНЫЙ СКЛАД (ПАЛЛЕТЫ_ДЛИН) ХРАНЕНИЕ' Зона,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО
+          ,CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+join      PETR_S2_PDBA.te_t T
+on        P.plnam = T.tenam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('06B', '06C', '06D', '07A')
+and REGEXP_SUBSTR (elbnam, '\w+', 5) = 'WH'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 910
+
+union
+
+select   'ХОЛОДНЫЙ СКЛАД (ПАЛЛЕТЫ_ДЛИН) ОТБОР' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО
+          ,CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('06B', '06C', '06D', '07A')
+and REGEXP_SUBSTR (elbnam, '\w+', 5) = 'KOM'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 910
+
+union
+-- Линолеум общий
+select   'ЛИНОЛЕУМ ОБЩИЙ' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (CASE WHEN (B.artid <> 'EMPTY' or B.artid is null) and P.benam IN ('08E') THEN B.artid END)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('08E')
+and       P.PLKLANAM = 'NRL'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+
+union
+-- Линолеум хранение
+select   'ЛИНОЛЕУМ ХРАНЕНИЕ' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (CASE WHEN (B.artid <> 'EMPTY' or B.artid is null) and P.benam IN ('08E') THEN B.artid END)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.elbnam IN ('08E_WH')
+and       P.PLKLANAM = 'NRL'
+and       P.PLKNZSPREINL = 0 
+and       P.PLKNZSPRAUSL = 0
+
+
+union
+-- Линолеум отбор
+select   'ЛИНОЛЕУМ ОТБОР' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (CASE WHEN (B.artid <> 'EMPTY' or B.artid is null) and P.benam IN ('08E') THEN B.artid END)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.elbnam IN ('08E_KOM')
+and       P.PLKLANAM = 'NRL'
+and       P.PLKNZSPREINL = 0 
+and       P.PLKNZSPRAUSL = 0
+
+
+union
+-- Линолеум отбор патерностер
+select   'ЛИНОЛЕУМ ОТБОР ПАТЕРНОСТЕР' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (CASE WHEN (B.artid <> 'EMPTY' or B.artid is null) and P.benam IN ('08E') THEN B.artid END)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.elbnam IN ('08E_KOM_PAT')
+and       P.PLKLANAM = 'NRL'
+and       P.PLKNZSPREINL = 0 
+and       P.PLKNZSPRAUSL = 0
+
+union
+
+select   'ТЕПЛЫЙ СКЛАД (ПАЛЛЕТЫ_ЕВРО) ОТБОР' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join      PETR_S2_PDBA.te_t T
+on        P.plnam = T.tenam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('08A', '08E', '08F', '08K')
+and       REGEXP_SUBSTR (P.elbnam, '\w+', 5) = 'KOM'
+and       P.PLKLANAM != 'NRL'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 900 and P.plbre < 910
+
+
+union
+
+select   'ТЕПЛЫЙ СКЛАД (ПАЛЛЕТЫ_ЕВРО) ХРАНЕНИЕ' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('08A', '08E', '08F', '08K')
+and       REGEXP_SUBSTR (P.elbnam, '\w+', 5) = 'WH'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 900 and P.plbre < 910
+
+
+union
+
+select   'ТЕПЛЫЙ СКЛАД (ПОЛКИ)' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО
+         ,CAST (COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+join      PETR_S2_PDBA.te_t T
+on        P.plnam = T.tenam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('08A', '08E', '08F', '08K')
+and       P.PLKLANAM = 'VIRTUELL'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre < 900
+
+union
+
+select   'ТЕПЛЫЙ СКЛАД (ПАЛЛЕТЫ_ДЛИН) ОТБОР' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+join      PETR_S2_PDBA.te_t T
+on        P.plnam = T.tenam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('08A', '08E', '08F', '08K')
+and REGEXP_SUBSTR (elbnam, '\w+', 5) = 'KOM'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 910
+
+union
+
+select   'ТЕПЛЫЙ СКЛАД (ПАЛЛЕТЫ_ДЛИН) ХРАНЕНИЕ' ВИД,
+          COUNT (P.plnam) ВСЕГО,
+          COUNT (CASE WHEN B.artid <> 'EMPTY' or B.artid is null THEN B.artid END) ЗАНЯТО,
+          CAST (COUNT (DISTINCT B.artid)*100/COUNT (P.plnam) as numeric (9,1)) ПРОЦЕНТ_ЗАНЯТОСТИ
+from      PETR_S2_PDBA.pl_t P
+left join PETR_S2_PDBA.te_t T
+on        P.plnam = T.plnam
+left join PETR_S2_PDBA.bst_t B
+on        T.tenam = B.tenam
+where     P.benam IN ('08A', '08E', '08F', '08K')
+and REGEXP_SUBSTR (elbnam, '\w+', 5) = 'WH'
+and       P.PLKNZSPREINL = 0 and P.PLKNZSPRAUSL = 0
+and       P.plbre >= 910
