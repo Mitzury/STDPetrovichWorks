@@ -4,7 +4,8 @@ aup AS (select * from PETR_S2_PDBA.aup_t),
 bsbw AS (select * from PETR_S2_PDBA.bsbw_t),
 art AS (select * from PETR_S2_PDBA.art_t),
 tpahis AS (select * from PETR_S2_PDBA.tpahis_t),
-txt AS (select * from PETR_S2_PDBA.txt_t)
+txt AS (select * from PETR_S2_PDBA.txt_t),
+tour AS (select * from PETR_S2_PDBA.tour_t)
 
 select 
 AUF as "Заказ",
@@ -91,10 +92,12 @@ LEFT JOIN bsbw on auf.aufid = bsbw.aufid
 LEFT JOIN art on art.artid = bsbw.artid
 LEFT JOIN tpahis on bsbw.tenam = tpahis.tenam
 LEFT JOIN txt on txt.TXTOBJID = auf.aufid and txt.TXTTABREF = 'AUF'
-where 
-auf.aufnr = :AUFNR or 
-auf.aufnr = 'MAEH'||SUBSTR (:AUFNR,4,8)||:YEARPAR||auf.auanam||'0' or
-auf.tournam = :AUFNR 
+join tour on tour.tournam = auf.tournam
+where (length(:AUFNR) = 18 and auf.aufnr = :AUFNR) 
+   or (length(:AUFNR) = 11 and auf.aufnr = 'MAEH'||SUBSTR (:AUFNR,4,8)||:YEAR||auf.auanam||'0')
+   or (length(:AUFNR) = 10 and auf.tournam = :AUFNR)
+   or (length(:AUFNR) < 10 and tour.tourinfo2 = :AUFNR)
+
 group by
 aufnr, 
 aufknzstorno,
