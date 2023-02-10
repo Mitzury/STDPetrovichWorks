@@ -1,0 +1,8 @@
+select * from PETR_S3_PDBA.tour_t
+left join PETR_S3_PDBA.auf_t on tour_t.tournam = auf_t.tournam
+where tour_t.tourinfo2 = 'Ш02074206'
+
+
+select * from PETR_S3_PDBA.tour_t where tour_t.tourinfo2 = 'Ш02074206'
+
+select * from PETR_S3_PDBA.tour_t
