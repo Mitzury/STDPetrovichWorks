@@ -1,5 +1,4 @@
 # Поиск ячеек с одинаковым ВГХ, и разным весом
-
 # Вывод количества ячеек, вгх вес.
 select count(plnam), lttnam, PLGEWMAX from (
 select plnam, LTT.LTTNAM, PL.PLGEWMAX from PETR_S2_PDBA.LTT_T ltt
@@ -17,3 +16,10 @@ and pl.plbre = ltt.LTTAUBRE
 AND pl.plhoe = ltt.LTTAUHOE
 and lttnam = '1200*800*1200')
 order by plgewmax
+
+
+# Вывод артикулов их вгх а так же вместимость на паллете и вгх паллеты
+select art_t.artnr, art_t.artelmsel, art_t.artlng, art_t.artbre,arthoe, art_t.artabmeh, artltt_t.artlttmgmax, artltt_t.artlttlng, artltt_t.artlttbre, artltt_t.artltthoe from PETR_S3_PDBA.art_t
+left join PETR_S3_PDBA.artltt_t on art_t.artid = artltt_t.artid
+where 
+artltt_t.lttnam = 'PF'
