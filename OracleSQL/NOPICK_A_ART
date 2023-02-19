@@ -6,3 +6,4 @@ left join PETR_S2_PDBA.pl_t pl on te.plnam = pl.plnam
 where 
 bst.artid != 'EMPTY' 
 and art.artklaabc = 1
+and pl.plknzezlres = 0
