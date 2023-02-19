@@ -1,8 +1,8 @@
-select * from PETR_S3_PDBA.tour_t
-left join PETR_S3_PDBA.auf_t on tour_t.tournam = auf_t.tournam
-where tour_t.tourinfo2 = 'Ш02074206'
-
-
-select * from PETR_S3_PDBA.tour_t where tour_t.tourinfo2 = 'Ш02074206'
-
-select * from PETR_S3_PDBA.tour_t
+select distinct bst.artid, art.artklaabc, bst.tenam, pl.plnam 
+from PETR_S2_PDBA.bst_t bst 
+left join PETR_S2_PDBA.art_t art on bst.artid = art.artid
+left join PETR_S2_PDBA.te_t te on te.tenam = bst.tenam
+left join PETR_S2_PDBA.pl_t pl on te.plnam = pl.plnam
+where 
+bst.artid != 'EMPTY' 
+and art.artklaabc = 1
