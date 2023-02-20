@@ -1,113 +1,181 @@
 WITH 
-auf AS (select * from PETR_S2_PDBA.auf_t),
-aup AS (select * from PETR_S2_PDBA.aup_t),
-bsbw AS (select * from PETR_S2_PDBA.bsbw_t),
-art AS (select * from PETR_S2_PDBA.art_t),
-tpahis AS (select * from PETR_S2_PDBA.tpahis_t),
-txt AS (select * from PETR_S2_PDBA.txt_t),
-tour AS (select * from PETR_S2_PDBA.tour_t)
+AUF AS (SELECT * FROM PETR_S2_PDBA.AUF_T), 
+AUP AS (SELECT* FROM PETR_S2_PDBA.AUP_T),
+BSBW AS (SELECT * FROM PETR_S2_PDBA.BSBW_T),
+ART AS (SELECT * FROM PETR_S2_PDBA.ART_T), 
+TPAHIS AS (SELECT * FROM PETR_S2_PDBA.TPAHIS_T), 
+TXT AS (SELECT * FROM PETR_S2_PDBA.TXT_T), 
+TOUR AS (SELECT * FROM PETR_S2_PDBA.TOUR_T)
 
-select 
-AUF as "Заказ",
-case
-when (CANSEL = 0 and auffsrsta = 100)  then 'Не отгружен' 
-when CANSEL = 1 then 'Отменен'
-else 'Отгружен'
-end as "Статус",
-CreateTime as "Время создания",
-HostTime as "Выгрузка в ХОСТ",
-Type as "Тип",
-Wh as "Склад", 
-Items as "Количество строк",
-PPL as "Пополнение",
-StartPick as "Начало сборки", 
-EndPick as "Конец сборки", 
-round((24 * 60 * (to_date(EndPick, 'HH24:MI') - to_date(StartPick, 'HH24:MI'))), 2) as "Время сборки",
-StartPQ as "Начало контроля", 
-EndPQ as "Конец контроля", 
-case when StartPQ is not null and EndPQ is not null then round((24 * 60 * (to_date(EndPQ, 'HH24:MI') - to_date(StartPQ, 'HH24:MI'))), 2) end as "Время контроля",
-CASE when StartCC is not null then StartCC end as "Начало колеровки", 
-EndCC as "Конец колеровки", 
-case when StartCC is not null and EndCC is not null then round((24 * 60 * (to_date(EndCC, 'HH24:MI') - to_date(StartCC, 'HH24:MI'))), 2) end as "Время колеровки",
-VRS as "Отгружено в VRS", 
-TOR as "Отгрузка в ворота", 
-AUS as "Конец отгрузки",
-round((24 * 60 * (to_date(AUS, 'HH24:MI') - to_date(StartPick, 'HH24:MI'))), 2) as "Общее время по складу",
-case
-when PlanTime > HostTime then 'Нет'
-else 'Да'
-end as "Опоздал"
-from (
-select DISTINCT
-auf.aufnr as AUF, 
-aufknzstorno as CANSEL,
-CASE     WHEN AUANAM = 'RTK' THEN 'КЛИЕНТ'
-                      WHEN AUANAM = 'RTD' THEN 'ДОСТАВКА'
-                      WHEN AUANAM = 'SPI' THEN 'СПИСАНИЕ'
-                      WHEN AUANAM = 'ZVP' THEN 'ПОСТАВЩИК'
-                      WHEN AUANAM = 'RVP' THEN 'ПЕРЕМЕЩЕНИЕ'
-                      WHEN AUANAM = 'RTZ' THEN 'ТЗ'
-                      WHEN AUANAM = 'RTP' THEN 'СП'
-                      WHEN AUANAM = 'RTI' THEN 'ИЗ' 
-                      end as Type,
-to_char(auf.dzins, 'HH24:MI / DD.MM.YYYY') as CreateTime,
-to_char(auf.AufDzVsSoll, 'HH24:MI / DD.MM.YYYY') as PlanTime,
-to_char(auf.aufdzhost,'HH24:MI / DD.MM.YYYY') as HostTime,
-art.artelmsel as Wh,
-count(distinct case when aup.aupbrmsel3 = art.artelmsel then aup.artid end) as Items,
-min(case 
-WHEN ((TPAHIS.tpastraphy = 'SLS' and TPAHIS.tpatypzulag = '10' and TPAHIS.tpatyplog = '30' and TPAHIS.plnamezl not like 'VRS%') and (to_char(tpahis.dzins, 'DD:MM') = to_char(auf.dzins, 'DD:MM'))) THEN to_char(TPAHIS.tpadzanl, 'HH24:MI')
-end) as PPL,
-min(CASE
-WHEN  (bsbw.bsbwart = '60' and (bsbw.tenamzl is not null) or (bsbw.bsbwart = '20' and bsbw.plnamist like 'FZG%')) then to_char(bsbw.dzins, 'HH24:MI')
-end) as StartPick,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamist like 'PP%PQ%') or (bsbw.bsbwart = '20' and bsbw.plnamist like 'VRS%' and bsbw.plnamql like 'FZG%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as EndPick,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamql like 'PP%PQ%' and bsbw.plnamist like 'PP%PW%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as StartPQ,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamql like 'PP%PW%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as EndPQ,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamist like 'CC%PQ%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as StartCC,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamql like 'CC%PW%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as EndCC,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamist like 'VRS%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as VRS,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamist like 'TOR%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as TOR,
-min(CASE
-WHEN (bsbw.bsbwart = '20' and bsbw.plnamist like 'AUS%') then to_char(bsbw.dzins, 'HH24:MI')
-end) as AUS,
-auf.auffsrsta
-from auf 
-join aup on auf.aufid = aup.aufid
-LEFT JOIN bsbw on auf.aufid = bsbw.aufid
-LEFT JOIN art on art.artid = bsbw.artid
-LEFT JOIN tpahis on bsbw.tenam = tpahis.tenam
-LEFT JOIN txt on txt.TXTOBJID = auf.aufid and txt.TXTTABREF = 'AUF'
-join tour on tour.tournam = auf.tournam
-where (length(:AUFNR) = 18 and auf.aufnr = :AUFNR) 
-   or (length(:AUFNR) = 11 and auf.aufnr = 'MAEH'||SUBSTR (:AUFNR,4,8)||:YEAR||auf.auanam||'0')
-   or (length(:AUFNR) = 10 and auf.tournam = :AUFNR)
-   or (length(:AUFNR) < 10 and tour.tourinfo2 = :AUFNR)
-
-group by
-aufnr, 
-aufknzstorno,
-auanam, 
-aufanzaupbra,
-artelmsel,
-auf.dzins,
-auf.aufdzhost,
-auf.auffsrsta,
-auf.AufDzVsSoll,
-aufdzhost
-order by art.artelmsel
-)
+SELECT
+    AUF AS "Заказ",
+    CASE
+        WHEN (CANSEL = 0 AND AUFFSRSTA = 100) THEN 'Не отгружен'
+        WHEN CANSEL = 1 THEN 'Отменен'
+        ELSE 'Отгружен'
+    END        AS "Статус",
+    CREATETIME AS "Время создания",
+    HOSTTIME   AS "Выгрузка в ХОСТ",
+    TYPE       AS "Тип",
+    WH         AS "Склад",
+    ITEMS      AS "Количество строк",
+    PPL        AS "Пополнение",
+    STARTPICK  AS "Начало сборки",
+    ENDPICK    AS "Конец сборки",
+    ROUND((24 * 60 * (TO_DATE(ENDPICK,
+    'HH24:MI') - TO_DATE(STARTPICK,
+    'HH24:MI'))),
+    2)         AS "Время сборки",
+    STARTPQ    AS "Начало контроля",
+    ENDPQ      AS "Конец контроля",
+    CASE
+        WHEN STARTPQ IS NOT NULL AND ENDPQ IS NOT NULL THEN
+            ROUND((24 * 60 * (TO_DATE(ENDPQ, 'HH24:MI') - TO_DATE(STARTPQ, 'HH24:MI'))), 2)
+    END        AS "Время контроля",
+    CASE
+        WHEN STARTCC IS NOT NULL THEN
+            STARTCC
+    END        AS "Начало колеровки",
+    ENDCC      AS "Конец колеровки",
+    CASE
+        WHEN STARTCC IS NOT NULL AND ENDCC IS NOT NULL THEN
+            ROUND((24 * 60 * (TO_DATE(ENDCC, 'HH24:MI') - TO_DATE(STARTCC, 'HH24:MI'))), 2)
+    END        AS "Время колеровки",
+    VRS        AS "Отгружено в VRS",
+    TOR        AS "Отгрузка в ворота",
+    AUS        AS "Конец отгрузки",
+    ROUND((24 * 60 * (TO_DATE(AUS,
+    'HH24:MI') - TO_DATE(STARTPICK,
+    'HH24:MI'))),
+    2)         AS "Общее время по складу",
+    CASE
+        WHEN PLANTIME > HOSTTIME THEN
+            'Нет'
+        ELSE
+            'Да'
+    END        AS "Опоздал"
+FROM
+    (
+        SELECT
+            DISTINCT AUF.AUFNR               AS AUF,
+            AUFKNZSTORNO            AS CANSEL,
+            CASE
+                WHEN AUANAM = 'RTK' THEN
+                    'КЛИЕНТ'
+                WHEN AUANAM = 'RTD' THEN
+                    'ДОСТАВКА'
+                WHEN AUANAM = 'SPI' THEN
+                    'СПИСАНИЕ'
+                WHEN AUANAM = 'ZVP' THEN
+                    'ПОСТАВЩИК'
+                WHEN AUANAM = 'RVP' THEN
+                    'ПЕРЕМЕЩЕНИЕ'
+                WHEN AUANAM = 'RTZ' THEN
+                    'ТЗ'
+                WHEN AUANAM = 'RTP' THEN
+                    'СП'
+                WHEN AUANAM = 'RTI' THEN
+                    'ИЗ'
+            END                     AS TYPE,
+            TO_CHAR(AUF.DZINS,
+            'HH24:MI / DD.MM.YYYY') AS CREATETIME,
+            TO_CHAR(AUF.AUFDZVSSOLL,
+            'HH24:MI / DD.MM.YYYY') AS PLANTIME,
+            TO_CHAR(AUF.AUFDZHOST,
+            'HH24:MI / DD.MM.YYYY') AS HOSTTIME,
+            ART.ARTELMSEL           AS WH,
+            COUNT(DISTINCT CASE
+                WHEN AUP.AUPBRMSEL3 = ART.ARTELMSEL THEN
+                    AUP.ARTID
+            END)                    AS ITEMS,
+            MIN(CASE
+                WHEN ((TPAHIS.TPASTRAPHY = 'SLS'
+                AND TPAHIS.TPATYPZULAG = '10'
+                AND TPAHIS.TPATYPLOG = '30'
+                AND TPAHIS.PLNAMEZL NOT LIKE 'VRS%')
+                AND (TO_CHAR(TPAHIS.DZINS, 'DD:MM') = TO_CHAR(AUF.DZINS, 'DD:MM'))) THEN
+                    TO_CHAR(TPAHIS.TPADZANL, 'HH24:MI')
+            END)                    AS PPL,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '60'
+                AND (BSBW.TENAMZL IS NOT NULL)
+                OR (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMIST LIKE 'FZG%')) THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS STARTPICK,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMIST LIKE 'PP%PQ%') OR (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMIST LIKE 'VRS%'
+                AND BSBW.PLNAMQL LIKE 'FZG%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS ENDPICK,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMQL LIKE 'PP%PQ%'
+                AND BSBW.PLNAMIST LIKE 'PP%PW%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS STARTPQ,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMQL LIKE 'PP%PW%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS ENDPQ,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMIST LIKE 'CC%PQ%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS STARTCC,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMQL LIKE 'CC%PW%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS ENDCC,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMIST LIKE 'VRS%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS VRS,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMIST LIKE 'TOR%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS TOR,
+            MIN(CASE
+                WHEN (BSBW.BSBWART = '20'
+                AND BSBW.PLNAMIST LIKE 'AUS%') THEN
+                    TO_CHAR(BSBW.DZINS, 'HH24:MI')
+            END)                    AS AUS,
+            AUF.AUFFSRSTA
+        FROM
+            AUF
+            JOIN AUP
+            ON AUF.AUFID = AUP.AUFID LEFT JOIN BSBW
+            ON AUF.AUFID = BSBW.AUFID
+            LEFT JOIN ART
+            ON ART.ARTID = BSBW.ARTID
+            LEFT JOIN TPAHIS
+            ON BSBW.TENAM = TPAHIS.TENAM
+            LEFT JOIN TXT
+            ON TXT.TXTOBJID = AUF.AUFID
+            AND TXT.TXTTABREF = 'AUF'
+            JOIN TOUR
+            ON TOUR.TOURNAM = AUF.TOURNAM
+        WHERE
+            (LENGTH(:AUFNR) = 18
+            AND AUF.AUFNR = :AUFNR)
+            OR (LENGTH(:AUFNR) = 11
+            AND AUF.AUFNR = 'MAEH'
+                ||SUBSTR (:AUFNR, 4, 8)
+                ||:YEAR
+                ||AUF.AUANAM
+                ||'0')
+            OR (LENGTH(:AUFNR) = 10
+            AND AUF.TOURNAM = :AUFNR)
+            OR (LENGTH(:AUFNR) < 10
+            AND TOUR.TOURINFO2 = :AUFNR)
+        GROUP BY
+            AUFNR, AUFKNZSTORNO, AUANAM, AUFANZAUPBRA, ARTELMSEL, AUF.DZINS, AUF.AUFDZHOST, AUF.AUFFSRSTA, AUF.AUFDZVSSOLL, AUFDZHOST
+        ORDER BY
+            ART.ARTELMSEL
+    )
