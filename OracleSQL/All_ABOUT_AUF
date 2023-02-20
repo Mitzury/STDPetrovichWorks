@@ -22,10 +22,7 @@ SELECT
     PPL        AS "Пополнение",
     STARTPICK  AS "Начало сборки",
     ENDPICK    AS "Конец сборки",
-    ROUND((24 * 60 * (TO_DATE(ENDPICK,
-    'HH24:MI') - TO_DATE(STARTPICK,
-    'HH24:MI'))),
-    2)         AS "Время сборки",
+    ROUND((24 * 60 * (TO_DATE(ENDPICK, 'HH24:MI') - TO_DATE(STARTPICK, 'HH24:MI'))),2) AS "Время сборки",
     STARTPQ    AS "Начало контроля",
     ENDPQ      AS "Конец контроля",
     CASE
@@ -60,34 +57,21 @@ FROM
             DISTINCT AUF.AUFNR               AS AUF,
             AUFKNZSTORNO            AS CANSEL,
             CASE
-                WHEN AUANAM = 'RTK' THEN
-                    'КЛИЕНТ'
-                WHEN AUANAM = 'RTD' THEN
-                    'ДОСТАВКА'
-                WHEN AUANAM = 'SPI' THEN
-                    'СПИСАНИЕ'
-                WHEN AUANAM = 'ZVP' THEN
-                    'ПОСТАВЩИК'
-                WHEN AUANAM = 'RVP' THEN
-                    'ПЕРЕМЕЩЕНИЕ'
-                WHEN AUANAM = 'RTZ' THEN
-                    'ТЗ'
-                WHEN AUANAM = 'RTP' THEN
-                    'СП'
-                WHEN AUANAM = 'RTI' THEN
-                    'ИЗ'
-            END                     AS TYPE,
-            TO_CHAR(AUF.DZINS,
-            'HH24:MI / DD.MM.YYYY') AS CREATETIME,
-            TO_CHAR(AUF.AUFDZVSSOLL,
-            'HH24:MI / DD.MM.YYYY') AS PLANTIME,
-            TO_CHAR(AUF.AUFDZHOST,
-            'HH24:MI / DD.MM.YYYY') AS HOSTTIME,
-            ART.ARTELMSEL           AS WH,
-            COUNT(DISTINCT CASE
-                WHEN AUP.AUPBRMSEL3 = ART.ARTELMSEL THEN
-                    AUP.ARTID
-            END)                    AS ITEMS,
+                WHEN AUANAM = 'RTK' THEN 'КЛИЕНТ'
+                WHEN AUANAM = 'RTD' THEN 'ДОСТАВКА'
+                WHEN AUANAM = 'SPI' THEN 'СПИСАНИЕ'
+                WHEN AUANAM = 'ZVP' THEN 'ПОСТАВЩИК'
+                WHEN AUANAM = 'RVP' THEN 'ПЕРЕМЕЩЕНИЕ'
+                WHEN AUANAM = 'RTZ' THEN 'ТЗ'
+                WHEN AUANAM = 'RTP' THEN 'СП'
+                WHEN AUANAM = 'RTI' THEN 'ИЗ'
+            END AS TYPE,
+            TO_CHAR(AUF.DZINS, 'HH24:MI / DD.MM.YYYY') AS CREATETIME,
+            TO_CHAR(AUF.AUFDZVSSOLL, 'HH24:MI / DD.MM.YYYY') AS PLANTIME,
+            TO_CHAR(AUF.AUFDZHOST, 'HH24:MI / DD.MM.YYYY') AS HOSTTIME,
+            ART.ARTELMSEL AS WH,
+            COUNT(DISTINCT CASE WHEN AUP.AUPBRMSEL3 = ART.ARTELMSEL THEN AUP.ARTID
+            END) AS ITEMS,
             MIN(CASE
                 WHEN ((TPAHIS.TPASTRAPHY = 'SLS'
                 AND TPAHIS.TPATYPZULAG = '10'
@@ -147,33 +131,18 @@ FROM
                     TO_CHAR(BSBW.DZINS, 'HH24:MI')
             END)                    AS AUS,
             AUF.AUFFSRSTA
-        FROM
-            AUF
-            JOIN AUP
-            ON AUF.AUFID = AUP.AUFID LEFT JOIN BSBW
-            ON AUF.AUFID = BSBW.AUFID
-            LEFT JOIN ART
-            ON ART.ARTID = BSBW.ARTID
-            LEFT JOIN TPAHIS
-            ON BSBW.TENAM = TPAHIS.TENAM
-            LEFT JOIN TXT
-            ON TXT.TXTOBJID = AUF.AUFID
-            AND TXT.TXTTABREF = 'AUF'
-            JOIN TOUR
-            ON TOUR.TOURNAM = AUF.TOURNAM
+        FROM AUF
+            JOIN AUP ON AUF.AUFID = AUP.AUFID 
+            LEFT JOIN BSBWON AUF.AUFID = BSBW.AUFID
+            LEFT JOIN ART ON ART.ARTID = BSBW.ARTID
+            LEFT JOIN TPAHIS ON BSBW.TENAM = TPAHIS.TENAM
+            LEFT JOIN TXT ON TXT.TXTOBJID = AUF.AUFID AND TXT.TXTTABREF = 'AUF'
+            JOIN TOUR ON TOUR.TOURNAM = AUF.TOURNAM
         WHERE
-            (LENGTH(:AUFNR) = 18
-            AND AUF.AUFNR = :AUFNR)
-            OR (LENGTH(:AUFNR) = 11
-            AND AUF.AUFNR = 'MAEH'
-                ||SUBSTR (:AUFNR, 4, 8)
-                ||:YEAR
-                ||AUF.AUANAM
-                ||'0')
-            OR (LENGTH(:AUFNR) = 10
-            AND AUF.TOURNAM = :AUFNR)
-            OR (LENGTH(:AUFNR) < 10
-            AND TOUR.TOURINFO2 = :AUFNR)
+            (LENGTH(:AUFNR) = 18 AND AUF.AUFNR = :AUFNR)
+            OR (LENGTH(:AUFNR) = 11 AND AUF.AUFNR = 'MAEH'||SUBSTR (:AUFNR, 4, 8)||:YEAR||AUF.AUANAM||'0')
+            OR (LENGTH(:AUFNR) = 10 AND AUF.TOURNAM = :AUFNR)
+            OR (LENGTH(:AUFNR) < 10 AND TOUR.TOURINFO2 = :AUFNR)
         GROUP BY
             AUFNR, AUFKNZSTORNO, AUANAM, AUFANZAUPBRA, ARTELMSEL, AUF.DZINS, AUF.AUFDZHOST, AUF.AUFFSRSTA, AUF.AUFDZVSSOLL, AUFDZHOST
         ORDER BY
