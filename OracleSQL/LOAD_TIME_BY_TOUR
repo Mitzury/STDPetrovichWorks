@@ -1,8 +1,32 @@
-select * from PETR_S3_PDBA.tour_t
+select tourdzstartist, tourinfo2, aufnr, auf_t.tournam, auf_t.dzins, bsbw_t.plnamql
+from PETR_S3_PDBA.tour_t
 left join PETR_S3_PDBA.auf_t on tour_t.tournam = auf_t.tournam
+left join PETR_S3_PDBA.te_t on auf_t.tournam = te_t.tournam
+left join PETR_S3_PDBA.bsbw_t on te_t.tenam = bsbw_t.tenam
 where tour_t.tourinfo2 = 'Ш02074206'
+and bsbw_t.plnamql like 'VRS%' and bsbw_t.plnamist like 'TOR%' 
+group by
+tourdzstartist, tourinfo2, aufnr, auf_t.tournam, auf_t.dzins, bsbw_t.plnamql
 
 
-select * from PETR_S3_PDBA.tour_t where tour_t.tourinfo2 = 'Ш02074206'
 
-select * from PETR_S3_PDBA.tour_t
+select * from PETR_S3_PDBA.aup_t where aufid like '%TSHEH0041884223RTI0'
+
+select * from PETR_S3_PDBA.te_t where tournam = '0322539502'
+
+
+select tenam, plnamql, min(dzins) from PETR_S3_PDBA.bsbw_t where tenam = 'MRM00646143'
+and plnamql like 'VRS%' and plnamist like 'TOR%' 
+group by tenam, plnamql, dzins
+
+select tenam, plnamql, max(dzins) from PETR_S3_PDBA.bsbw_t where tenam = 'MRM00646143'
+and plnamql like 'TOR%' and plnamist like 'AUS%' 
+group by tenam, plnamql, dzins
+
+
+with 
+tour as (select * from PETR_S3_PDBA.tour_t where tour_t.tourinfo2 = :tournam),
+auf as (select * from tour join PETR_S3_PDBA.auf_t using (tournam))
+
+
+select * from auf
