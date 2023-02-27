@@ -21,4 +21,4 @@ bst.artid != 'EMPTY'
 and art.artklaabc = 1
 and pl.plknzezlres = 0
 and pl.plnam not like 'AUS%'
-and pl.plnam not like  '%KOM'
+and pl.btbnam like '%KOM'
