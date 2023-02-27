@@ -7,3 +7,18 @@ where
 bst.artid != 'EMPTY' 
 and art.artklaabc = 1
 and pl.plknzezlres = 0
+and pl.plnam not like 'AUS%'
+
+minus
+
+select distinct bst.artid, art.artklaabc, bst.tenam, pl.plnam 
+from PETR_S2_PDBA.bst_t bst 
+left join PETR_S2_PDBA.art_t art on bst.artid = art.artid
+left join PETR_S2_PDBA.te_t te on te.tenam = bst.tenam
+left join PETR_S2_PDBA.pl_t pl on te.plnam = pl.plnam
+where 
+bst.artid != 'EMPTY' 
+and art.artklaabc = 1
+and pl.plknzezlres = 0
+and pl.plnam not like 'AUS%'
+and pl.plnam not like  '%KOM'
