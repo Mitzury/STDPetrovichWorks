@@ -1,4 +1,4 @@
-select distinct substr(bst.artid, 9,11), art.artklaabc, art.artbez, art.ArtElmSel2
+select distinct substr(bst.artid, 9,11), art.artbez, art.ArtElmSel2
 from PETR_S3_PDBA.bst_t bst 
 left join PETR_S3_PDBA.art_t art on bst.artid = art.artid
 left join PETR_S3_PDBA.te_t te on te.tenam = bst.tenam
@@ -12,11 +12,13 @@ and pl.plnam not like 'TOR%'
 and pl.plnam not like 'VRS%'
 and pl.plnam not like 'FZG%'
 and pl.plnam not like 'XXX%'
+and pl.plnam not like 'SRP%'
+and pl.benam IN (:WH)
 and art.ArtElmSel2 IN (:ELM)
 
 minus
 
-select distinct substr(bst.artid, 9,11), art.artklaabc, art.artbez,art.ArtElmSel2
+select distinct substr(bst.artid, 9,11), art.artbez,art.ArtElmSel2
 from PETR_S3_PDBA.bst_t bst 
 left join PETR_S3_PDBA.art_t art on bst.artid = art.artid
 left join PETR_S3_PDBA.te_t te on te.tenam = bst.tenam
@@ -30,8 +32,11 @@ and pl.plnam not like 'TOR%'
 and pl.plnam not like 'VRS%'
 and pl.plnam not like 'FZG%'
 and pl.plnam not like 'XXX%'
+and pl.plnam not like 'SRP%'
 and pl.elbnam like '%KOM'
+and pl.benam IN (:WH)
 and art.ArtElmSel2 IN (:ELM)
+
 
 -- :WH parametr
 select * from (
