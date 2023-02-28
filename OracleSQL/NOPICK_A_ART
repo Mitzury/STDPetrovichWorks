@@ -33,7 +33,6 @@ and pl.plnam not like 'XXX%'
 and pl.elbnam like '%KOM'
 and art.ArtElmSel2 IN (:ELM)
 
-
 -- :WH parametr
 select * from (
 select distinct regexp_substr(benam, ('^\d+\w')) as WH from PETR_S3_PDBA.pl_t)
