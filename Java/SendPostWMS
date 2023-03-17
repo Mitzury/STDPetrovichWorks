@@ -1,0 +1,47 @@
+import javax.swing.plaf.synth.SynthGraphicsUtils;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
+
+import static java.net.http.HttpRequest.BodyPublishers.ofInputStream;
+
+public class Main {
+    public static void main(String[] args) throws IOException, InterruptedException {
+
+        int[] artnr = {
+..
+        };
+
+        for (int i = 0; i <= artnr.length; i++) {
+            int trxid = 3141 + i;
+            double percent = 100 * i / artnr.length;
+int artnr1 = artnr[i];
+            URL url = new URL("http://10.14.229.26:30146/psiwms/rest/if/psirestifin/");
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setRequestMethod("POST");
+            http.setDoOutput(true);
+            http.setRequestProperty("Accept", "application/json");
+            http.setRequestProperty("Authorization", "Basic UFNJOlBTSQ==");
+            http.setRequestProperty("Content-Type", "application/json");
+            String data = "{\n    \"PSIwmsMsg\": [\n        {\n            \"TrxId\": \"BSI00000000000000000" + trxid + "\",\n            \"MsgNam\": \"WMS.ART\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n            \"ArtNr\": \"00000" + artnr1 + "\",\n            \"ArtKnz2\": \"0\"\n        }\n    ]\n}";
+
+            byte[] out = data.getBytes(StandardCharsets.UTF_8);
+
+            OutputStream stream = http.getOutputStream();
+            stream.write(out);
+
+            System.out.println("Артикул: " + artnr[i] + " " +  http.getResponseCode() + " " + http.getResponseMessage() + " " + percent + "%");
+            http.disconnect();
+            TimeUnit.MILLISECONDS.sleep(500);
+        }
+
+    }
+}
