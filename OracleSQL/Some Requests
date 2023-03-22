@@ -23,3 +23,9 @@ select art_t.artnr, art_t.artelmsel, art_t.artlng, art_t.artbre,arthoe, art_t.ar
 left join PETR_S3_PDBA.artltt_t on art_t.artid = artltt_t.artid
 where 
 artltt_t.lttnam = 'PF'
+
+# вывод артикулов где не проставлен признак "тип те для перекладки" 
+select distinct artnr from PETR_S3_PDBA.art_t
+left join PETR_S3_PDBA.artltt_t on art_t.artid = artltt_t.artid
+where artltt_t.lttnam = 'PF' and artlttknzdefltkom2 = 0
+
