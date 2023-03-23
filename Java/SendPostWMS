@@ -20,18 +20,22 @@ public class Main {
 ..
         };
 
-        for (int i = 0; i <= artnr.length; i++) {
-            int trxid = 3141 + i;
-            double percent = 100 * i / artnr.length;
-int artnr1 = artnr[i];
-            URL url = new URL("http://10.14.229.26:30146/psiwms/rest/if/psirestifin/");
+            for (int i = 0; i <= artnr.length; i++) {
+            int trxid = 3673 + i;
+            float percent = 100 * i / artnr.length;
+            int artnr1 = artnr[i];
+            URL url = new URL("http://10.14.229.26:30146/psiwms/rest/if/psirestifin/"); /*МРМ прод */
+            /* URL url = new URL("http://10.14.228.144:30096/psiwms/rest/if/psirestifin/");  /*ДМТ прод */
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod("POST");
             http.setDoOutput(true);
             http.setRequestProperty("Accept", "application/json");
             http.setRequestProperty("Authorization", "Basic UFNJOlBTSQ==");
             http.setRequestProperty("Content-Type", "application/json");
-            String data = "{\n    \"PSIwmsMsg\": [\n        {\n            \"TrxId\": \"BSI00000000000000000" + trxid + "\",\n            \"MsgNam\": \"WMS.ART\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n            \"ArtNr\": \"00000" + artnr1 + "\",\n            \"ArtKnz2\": \"0\"\n        }\n    ]\n}";
+            /* String data = "{\n    \"PSIwmsMsg\": [\n        {\n            \"TrxId\": \"BSI000000000000000000" + trxid + "\",\n            \"MsgNam\": \"WMS.ART\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n    \"ArtNr\": \"00000" + artnr1 + "\",\n            \"ArtKnz2\": \"0\"\n        }\n    ]\n}";
+            */
+            String data = "{\n    \"PSIwmsMsg\": [\n        {\n             \"TrxId\": \"BSI00000000000000000" + trxid + "\",\n             \"MsgNam\": \"WMS.ARTLTT\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n  \"ArtNr\": \"00000" + artnr1 + "\",\n    \"LttNam\": \"PF\",\n            \"ArtLttKnzDefltKom2\": \"1\"\n        }\n    ]\n}";
+
 
             byte[] out = data.getBytes(StandardCharsets.UTF_8);
 
@@ -40,8 +44,11 @@ int artnr1 = artnr[i];
 
             System.out.println("Артикул: " + artnr[i] + " " +  http.getResponseCode() + " " + http.getResponseMessage() + " " + percent + "%");
             http.disconnect();
-            TimeUnit.MILLISECONDS.sleep(500);
+            TimeUnit.MILLISECONDS.sleep(5000);
         }
 
     }
 }
+
+$2a$10$w3APgazPLB4ZOZzW7x3DxeTVJoF.ok7/./TD9n9EZxSgb5efQq52.
+
