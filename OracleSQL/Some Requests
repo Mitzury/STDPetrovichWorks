@@ -29,3 +29,19 @@ select distinct artnr from PETR_S3_PDBA.art_t
 left join PETR_S3_PDBA.artltt_t on art_t.artid = artltt_t.artid
 where artltt_t.lttnam = 'PF' and artlttknzdefltkom2 = 0
 
+# Поиск артикулов, где не соответствует признак склада к месту хранения 
+select artid, artelmsel, substr(plnam, 1,3) from (
+select art_t.artid, art_t.artelmsel, bst_t.tenam, te_t.plnam from PETR_S3_PDBA.art_t 
+left join PETR_S3_PDBA.bst_t on art_t.artid = bst_t.artid
+left join PETR_S3_PDBA.te_T on bst_t.tenam = te_t.tenam
+where art_t.artelmsel IN ('01A','02B','03C','04D','04T', '03F', '03N')
+and bst_t.artid != 'EMPTY'
+and te_t.plnam not like 'AUS%'
+and te_t.plnam not like 'VRS%'
+and te_t.plnam not like 'SRP%'
+and te_t.plnam not like 'INP%'
+and te_t.plnam not like 'PP%'
+and te_t.plnam not like 'TOR%'
+and te_t.plnam not like 'UWE%'
+)
+where artelmsel != substr(plnam, 1,3)
