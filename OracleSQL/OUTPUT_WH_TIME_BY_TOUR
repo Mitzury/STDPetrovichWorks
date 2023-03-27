@@ -1,13 +1,13 @@
 select  
 tourinfo2, auf.aufnr, auf.dzins, auf.aufdzvssoll, 
-case when art.artelmsel in ('01A', '02B', '03C', '03F', '03N', '04D', '04T') then max(bsbw.dzins) end as "1-4",
-case when art.artelmsel in ('05A', '05B', '06A') then max(bsbw.dzins) end as "5-6",
-case when art.artelmsel = '07A' then max(bsbw.dzins) end as "7",
-case when art.artelmsel in ('08A', '08B') then max(bsbw.dzins) end as "8",
-case when art.artelmsel like '09%' then max(bsbw.dzins) end as "9",
-case when art.artelmsel like '10%' then max(bsbw.dzins) end as "10",
-case when art.artelmsel like '11%'  then max(bsbw.dzins) end as "11",
-case when art.artelmsel like '12%'  then max(bsbw.dzins) end as "12"
+case when art.artelmsel in ('01A', '02B', '03C', '03F', '03N', '04D', '04T') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "1-4",
+case when art.artelmsel in ('05A', '05B', '06A') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "5-6",
+case when art.artelmsel = '07A' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "7",
+case when art.artelmsel in ('08A', '08B') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "8",
+case when art.artelmsel like '09%' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "9",
+case when art.artelmsel like '10%' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "10",
+case when art.artelmsel like '11%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "11",
+case when art.artelmsel like '12%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "12"
 ,auf.aufdzftg
 from PETR_S3_PDBA.tour_t tour 
 left join PETR_S3_PDBA.auf_t auf on tour.tournam = auf.tournam
