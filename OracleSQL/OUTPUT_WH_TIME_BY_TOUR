@@ -1,5 +1,13 @@
 select  
-tourinfo2, auf.aufnr, auf.dzins, auf.aufdzvssoll, 
+case 
+when substr(auf.aufnr,1,6) = 'TUEH00' then concat ('ТУЭ' ,substr(auf.aufnr,5,8)) 
+when substr(auf.aufnr,1,6) = 'THEH00' then concat ('ТШЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = 'TVEH00' then concat ('ТВЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = 'TSHEH0' then concat ('ТШЭ' ,substr(auf.aufnr,6,8)) 
+when substr(auf.aufnr,1,6) = 'TJAEH0' then concat ('ТЯЭ' ,substr(auf.aufnr,6,8)) 
+when substr(auf.aufnr,1,6) = 'TJAEH0' then concat ('ТЮЭ' ,substr(auf.aufnr,6,8)) 
+end as ptiu,
+auf.aufnr, auf.dzins, auf.aufdzvssoll, tourinfo2,
 case when art.artelmsel in ('01A', '02B', '03C', '03F', '03N', '04D', '04T') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "1-4",
 case when art.artelmsel in ('05A', '05B', '06A') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "5-6",
 case when art.artelmsel = '07A' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "7",
