@@ -1,5 +1,5 @@
 select  
-tourinfo2, auf.aufnr, auf.dzins, 
+tourinfo2, auf.aufnr, auf.dzins, auf.aufdzvssoll, 
 case when art.artelmsel in ('01A', '02B', '03C', '03F', '03N', '04D', '04T') then max(bsbw.dzins) end as "1-4",
 case when art.artelmsel in ('05A', '05B', '06A') then max(bsbw.dzins) end as "5-6",
 case when art.artelmsel = '07A' then max(bsbw.dzins) end as "7",
@@ -15,4 +15,4 @@ left join PETR_S3_PDBA.bsbw_t bsbw on auf.aufid = bsbw.aufid
 left join PETR_S3_PDBA.art_t art on bsbw.artid = art.artid
 where tour.tourinfo2 = 'Ш02074206'
 and bsbw.plnamist like 'TOR%'
-group by  tourinfo2, auf.aufnr, auf.dzins, art.artelmsel,  auf.aufdzftg
+group by  tourinfo2, auf.aufnr, auf.aufdzvssoll, auf.dzins, art.artelmsel, auf.aufdzftg
