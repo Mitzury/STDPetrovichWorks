@@ -1,11 +1,19 @@
 select  
 case 
+-- Мурманка
 when substr(auf.aufnr,1,6) = 'TUEH00' then concat ('ТУЭ' ,substr(auf.aufnr,5,8)) 
 when substr(auf.aufnr,1,6) = 'THEH00' then concat ('ТШЭ' ,substr(auf.aufnr,5,8))
 when substr(auf.aufnr,1,6) = 'TVEH00' then concat ('ТВЭ' ,substr(auf.aufnr,5,8))
 when substr(auf.aufnr,1,6) = 'TSHEH0' then concat ('ТШЭ' ,substr(auf.aufnr,6,8)) 
 when substr(auf.aufnr,1,6) = 'TJAEH0' then concat ('ТЯЭ' ,substr(auf.aufnr,6,8)) 
 when substr(auf.aufnr,1,6) = 'TJAEH0' then concat ('ТЮЭ' ,substr(auf.aufnr,6,8)) 
+-- Дмитровка:
+when substr(auf.aufnr,1,6) = 'MEEH00' then concat ('МЕЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = 'MREH00' then concat ('МРЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = 'MCEH00' then concat ('МЦЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = '00MAEH' then concat ('МАЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = 'MJSHEH' then concat ('МЩЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = 'MAEH00' then concat ('МАЭ' ,substr(auf.aufnr,5,8))
 end as ptiu,
 auf.aufnr, auf.dzins, auf.aufdzvssoll, tourinfo2,
 case when art.artelmsel in ('01A', '02B', '03C', '03F', '03N', '04D', '04T') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "1-4",
@@ -17,10 +25,10 @@ case when art.artelmsel like '10%' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI'
 case when art.artelmsel like '11%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "11",
 case when art.artelmsel like '12%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "12"
 ,auf.aufdzftg
-from PETR_S3_PDBA.tour_t tour 
-left join PETR_S3_PDBA.auf_t auf on tour.tournam = auf.tournam
-left join PETR_S3_PDBA.bsbw_t bsbw on auf.aufid = bsbw.aufid
-left join PETR_S3_PDBA.art_t art on bsbw.artid = art.artid
-where tour.tourinfo2 = 'Ш02074206'
+from PETR_S2_PDBA.tour_t tour 
+left join PETR_S2_PDBA.auf_t auf on tour.tournam = auf.tournam
+left join PETR_S2_PDBA.bsbw_t bsbw on auf.aufid = bsbw.aufid
+left join PETR_S2_PDBA.art_t art on bsbw.artid = art.artid
+where tour.tourinfo2 = 'А00397303'
 and bsbw.plnamist like 'TOR%'
 group by  tourinfo2, auf.aufnr, auf.aufdzvssoll, auf.dzins, art.artelmsel, auf.aufdzftg
