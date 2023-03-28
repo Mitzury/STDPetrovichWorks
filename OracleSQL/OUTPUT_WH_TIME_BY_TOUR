@@ -12,23 +12,33 @@ when substr(auf.aufnr,1,6) = 'MEEH00' then concat ('МЕЭ' ,substr(auf.aufnr,5,
 when substr(auf.aufnr,1,6) = 'MREH00' then concat ('МРЭ' ,substr(auf.aufnr,5,8))
 when substr(auf.aufnr,1,6) = 'MCEH00' then concat ('МЦЭ' ,substr(auf.aufnr,5,8))
 when substr(auf.aufnr,1,6) = '00MAEH' then concat ('МАЭ' ,substr(auf.aufnr,5,8))
-when substr(auf.aufnr,1,6) = 'MJSHEH' then concat ('МЩЭ' ,substr(auf.aufnr,5,8))
+when substr(auf.aufnr,1,6) = 'MJSHEH' then concat ('МЩЭ' ,substr(auf.aufnr,7,8))
 when substr(auf.aufnr,1,6) = 'MAEH00' then concat ('МАЭ' ,substr(auf.aufnr,5,8))
 end as ptiu,
 auf.aufnr, auf.dzins, auf.aufdzvssoll, tourinfo2,
-case when art.artelmsel in ('01A', '02B', '03C', '03F', '03N', '04D', '04T') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "1-4",
-case when art.artelmsel in ('05A', '05B', '06A') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "5-6",
-case when art.artelmsel = '07A' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "7",
-case when art.artelmsel in ('08A', '08B') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "8",
-case when art.artelmsel like '09%' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "9",
-case when art.artelmsel like '10%' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "10",
-case when art.artelmsel like '11%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "11",
-case when art.artelmsel like '12%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "12"
-,auf.aufdzftg
+-- Мурманка:
+--case when art.artelmsel in ('01A', '02B', '03C', '03F', '03N', '04D', '04T') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "1-4",
+--case when art.artelmsel in ('05A', '05B', '06A') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "5-6",
+--case when art.artelmsel = '07A' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "7",
+--case when art.artelmsel in ('08A', '08B') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "8",
+--case when art.artelmsel like '09%' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "9",
+--case when art.artelmsel like '10%' then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "10",
+--case when art.artelmsel like '11%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "11",
+--case when art.artelmsel like '12%'  then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "12"
+-- Дмитровка:
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^([0])([1])\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "1",
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^([0])([2])\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "2",
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^([0])([3])\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "3",
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^([0])([4])\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "4",
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^([0])([5])\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "5",
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^\d[06,07]\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "6-7",
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^\d[08]\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "8",
+case when art.artelmsel = REGEXP_SUBSTR(art.artelmsel, '^\d[09,10,11,12]\w') then to_char(max(bsbw.dzins), 'DD.MM/HH24:MI') end as "9-12",
+auf.aufdzftg
 from PETR_S2_PDBA.tour_t tour 
 left join PETR_S2_PDBA.auf_t auf on tour.tournam = auf.tournam
 left join PETR_S2_PDBA.bsbw_t bsbw on auf.aufid = bsbw.aufid
 left join PETR_S2_PDBA.art_t art on bsbw.artid = art.artid
-where tour.tourinfo2 = 'А00397303'
+where tour.tourinfo2 = :tour
 and bsbw.plnamist like 'TOR%'
 group by  tourinfo2, auf.aufnr, auf.aufdzvssoll, auf.dzins, art.artelmsel, auf.aufdzftg
