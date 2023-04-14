@@ -1,0 +1,76 @@
+with 
+bst as (select pl.plnam, te.lttnam, art.artnr, pl.elbnam, art.artbez, artmgeh, bst.bstmg, NVL(artltt.artlttmgmax, -1) artlttmgmax, pl.artid, bst.aufid, bst.bstdzmhd, bst.dzins from PETR_S3_PDBA.bst_t bst
+left join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
+left join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
+left join PETR_S3_PDBA.art_t art on bst.artid = art.artid 
+left join PETR_S3_PDBA.artltt_t artltt on art.artid = artltt.artid and te.lttnam = artltt.lttnam
+where REGEXP_SUBSTR(pl.benam, '^([0])([5|6])\w') = pl.benam
+and bst.artid != 'EMPTY'),
+
+WH as (select plnam,artnr,bstmg,artlttmgmax,
+case
+when bstdzmhd is not null then min(bstdzmhd) over (partition by artnr) 
+when bstdzmhd is null then min(dzins) over (partition by artnr) 
+end
+as fifo,
+row_number() over (partition by artnr order by artnr) rn from bst where elbnam like '%WH')
+
+select kom.plnam, kom.artnr, kom.artbez, 
+
+case 
+when kom.artmgeh = 'MTP' then kom.bstmg / 1000
+else kom.bstmg 
+end
+|| ' ' || 
+case kom.artmgeh 
+when 'PCE' then 'шт.'
+when 'PA' then 'упк.'
+when 'NRL' then 'рул.'
+when 'MTP' then 'м.п.'
+else '' end as bstmg, 
+
+case 
+when kom.artmgeh = 'MTP' then kom.artlttmgmax / 1000
+else kom.artlttmgmax
+end 
+
+|| ' ' || 
+case kom.artmgeh 
+when 'PCE' then 'шт.'
+when 'PA' then 'упк.'
+when 'NRL' then 'рул.'
+when 'MTP' then 'м.п.'
+else '' end as artlttmgmax, WH.plnam whnam, 
+
+case 
+when kom.artmgeh = 'MTP' then WH.bstmg / 1000
+else WH.bstmg
+end 
+
+|| ' ' || 
+
+case kom.artmgeh 
+when 'PCE' then 'шт.'
+when 'PA' then 'упк.'
+when 'NRL' then 'рул.'
+when 'MTP' then 'м.п.'
+else '' end as whmg, 
+case 
+when kom.artmgeh = 'MTP' then WH.artlttmgmax / 1000
+else WH.artlttmgmax
+end  || ' ' || 
+case kom.artmgeh 
+when 'PCE' then 'шт.'
+when 'PA' then 'упк.'
+when 'NRL' then 'рул.'
+when 'MTP' then 'м.п.'
+else '' end as whmgmax
+
+from bst KOM
+left join WH on KOM.artnr = WH.artnr
+where kom.elbnam like '%KOM'
+and kom.artid is not null 
+and kom.aufid is null
+and kom.bstmg * 100 / kom.artlttmgmax < 30
+and WH.rn = 1
+order by artnr
