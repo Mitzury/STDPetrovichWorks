@@ -7,13 +7,9 @@ where
 bst.artid != 'EMPTY' 
 and art.artklaabc = 1
 and pl.plknzezlres = 0
-and pl.plnam not like 'AUS%'
-and pl.plnam not like 'TOR%'
-and pl.plnam not like 'VRS%'
-and pl.plnam not like 'FZG%'
-and pl.plnam not like 'XXX%'
-and pl.plnam not like 'SRP%'
-and pl.benam IN (:WH)
+and REGEXP_SUBSTR(pl.plnam, '^([0-9])+\w') = substr(pl.plnam,1,3)
+and not  (te.lttnam = 'PF' and bst.bstmg = 1)
+and art.ArtElmSel IN (:WH)
 and art.ArtElmSel2 IN (:ELM)
 
 minus
@@ -27,23 +23,7 @@ where
 bst.artid != 'EMPTY' 
 and art.artklaabc = 1
 and pl.plknzezlres = 0
-and pl.plnam not like 'AUS%'
-and pl.plnam not like 'TOR%'
-and pl.plnam not like 'VRS%'
-and pl.plnam not like 'FZG%'
-and pl.plnam not like 'XXX%'
-and pl.plnam not like 'SRP%'
+and REGEXP_SUBSTR(pl.plnam, '^([0-9])+\w') = substr(pl.plnam,1,3)
 and pl.elbnam like '%KOM'
-and pl.benam IN (:WH)
+and art.ArtElmSel IN (:WH)
 and art.ArtElmSel2 IN (:ELM)
-
-
--- :WH parametr
-select * from (
-select distinct regexp_substr(benam, ('^\d+\w')) as WH from PETR_S3_PDBA.pl_t)
-order by WH
-
--- :ELM parametr
-select * from (
-select distinct ArtElmSel2 from PETR_S3_PDBA.art_t)
-order by ArtElmSel2
