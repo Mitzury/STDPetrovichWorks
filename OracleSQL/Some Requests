@@ -34,9 +34,7 @@ select count(plnam),lttnam, PLGEWMAX,
 row_number() over (partition by lttnam order by lttnam) rn
 from (
 select plnam, LTT.LTTNAM, PL.PLGEWMAX from PETR_S2_PDBA.LTT_T ltt
-join PETR_S2_PDBA.pl_t Pl on pl.pllng = ltt.LTTAULNG
-and pl.plbre = ltt.LTTAUBRE
-AND pl.plhoe = ltt.LTTAUHOE)
+join PETR_S2_PDBA.pl_t Pl on pllng||'*'||plbre||'*'||plhoe = ltt.lttnam)
 group by lttnam, PLGEWMAX
 order by LTTNAM)
 group by lttnam
@@ -44,6 +42,7 @@ group by lttnam
 )
 )
 order by plgewmax
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Вывод артикулов их вгх а так же вместимость на паллете и вгх паллеты
