@@ -1,13 +1,26 @@
-with 
-bst as (select pl.plnam, te.lttnam, art.artnr, pl.elbnam, art.artbez, artmgeh, bst.bstmg, NVL(artltt.artlttmgmax, -1) artlttmgmax, pl.artid, bst.aufid, bst.bstdzmhd, bst.dzins from PETR_S3_PDBA.bst_t bst
+with bst as 
+(select pl.plnam, te.lttnam, art.artnr, nvl(art.artmhdtagezul, 0) mhdbefore, nvl(art.artmhdtagezulplus,0) mhdafter, pl.elbnam, art.artbez, artmgeh, bst.bstmg, NVL(artltt.artlttmgmax, -1) artlttmgmax, substr(pl.artid, -11) as fix, bst.aufid,
+case 
+when bstdzmhd is null then to_date(01 , 'DD')
+when bstdzmhd is not null then bstdzmhd end as bstdzmhd,
+bst.dzins
+from PETR_S3_PDBA.bst_t bst
 left join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
 left join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
 left join PETR_S3_PDBA.art_t art on bst.artid = art.artid 
 left join PETR_S3_PDBA.artltt_t artltt on art.artid = artltt.artid and te.lttnam = artltt.lttnam
-where REGEXP_SUBSTR(pl.benam, '^([0])([5|6])\w') = pl.benam
-and bst.artid != 'EMPTY'),
+where 
+REGEXP_SUBSTR(pl.benam, '^([0])([5|6])\w') = pl.benam
+and bst.aufid is null
+),
 
-WH as (select plnam,artnr,bstmg,artlttmgmax,
+kom as (select * from bst
+where
+elbnam like '%KOM'
+and bstmg * 100 / artlttmgmax < 30
+and fix is not null),
+
+WH as (select plnam,artnr,bstmg,artlttmgmax, bstdzmhd,
 case
 when bstdzmhd is not null then min(bstdzmhd) over (partition by artnr) 
 when bstdzmhd is null then min(dzins) over (partition by artnr) 
@@ -15,8 +28,10 @@ end
 as fifo,
 row_number() over (partition by artnr order by artnr) rn from bst where elbnam like '%WH')
 
-select kom.plnam, kom.artnr, kom.artbez, 
 
+select
+
+kom.plnam, kom.artnr, kom.artbez, 
 case 
 when kom.artmgeh = 'MTP' then kom.bstmg / 1000
 else kom.bstmg 
@@ -28,12 +43,10 @@ when 'PA' then 'упк.'
 when 'NRL' then 'рул.'
 when 'MTP' then 'м.п.'
 else '' end as bstmg, 
-
 case 
 when kom.artmgeh = 'MTP' then kom.artlttmgmax / 1000
 else kom.artlttmgmax
 end 
-
 || ' ' || 
 case kom.artmgeh 
 when 'PCE' then 'шт.'
@@ -41,36 +54,43 @@ when 'PA' then 'упк.'
 when 'NRL' then 'рул.'
 when 'MTP' then 'м.п.'
 else '' end as artlttmgmax, WH.plnam whnam, 
-
 case 
 when kom.artmgeh = 'MTP' then WH.bstmg / 1000
 else WH.bstmg
 end 
-
 || ' ' || 
-
 case kom.artmgeh 
 when 'PCE' then 'шт.'
 when 'PA' then 'упк.'
 when 'NRL' then 'рул.'
 when 'MTP' then 'м.п.'
 else '' end as whmg, 
-case 
-when kom.artmgeh = 'MTP' then WH.artlttmgmax / 1000
-else WH.artlttmgmax
-end  || ' ' || 
+case
+when kom.artmgeh = 'MTP'
+then 
+    case 
+        when (kom.artlttmgmax - kom.bstmg) > WH.bstmg then WH.bstmg / 1000
+        else (kom.artlttmgmax - kom.bstmg) / 1000
+        end
+else
+    case
+        when (kom.artlttmgmax - kom.bstmg) > WH.bstmg then WH.bstmg
+        else kom.artlttmgmax - kom.bstmg end
+end
+|| ' ' || 
 case kom.artmgeh 
 when 'PCE' then 'шт.'
 when 'PA' then 'упк.'
 when 'NRL' then 'рул.'
 when 'MTP' then 'м.п.'
-else '' end as whmgmax
+else '' end
+as whmgmax,
 
-from bst KOM
-left join WH on KOM.artnr = WH.artnr
-where kom.elbnam like '%KOM'
-and kom.artid is not null 
-and kom.aufid is null
-and kom.bstmg * 100 / kom.artlttmgmax < 30
-and WH.rn = 1
-order by artnr
+case
+when kom.artnr = kom.fix then '0'
+else '1' end as "fixerror"
+from kom
+left join wh on KOM.fix = WH.artnr
+where 
+(kom.artnr != 'EMPTY' and WH.plnam is not null)
+and rn = 1
