@@ -32,10 +32,16 @@ public class Main {
             http.setRequestProperty("Accept", "application/json");
             http.setRequestProperty("Authorization", "Basic UFNJOlBTSQ==");
             http.setRequestProperty("Content-Type", "application/json");
-            /* String data = "{\n    \"PSIwmsMsg\": [\n        {\n            \"TrxId\": \"BSI000000000000000000" + trxid + "\",\n            \"MsgNam\": \"WMS.ART\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n    \"ArtNr\": \"00000" + artnr1 + "\",\n            \"ArtKnz2\": \"0\"\n        }\n    ]\n}";
-            */
-            String data = "{\n    \"PSIwmsMsg\": [\n        {\n             \"TrxId\": \"BSI00000000000000000" + trxid + "\",\n             \"MsgNam\": \"WMS.ARTLTT\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n  \"ArtNr\": \"00000" + artnr1 + "\",\n    \"LttNam\": \"PF\",\n            \"ArtLttKnzDefltKom2\": \"1\"\n        }\n    ]\n}";
+            
+            /*
+            String data = "{\n    \"PSIwmsMsg\": [\n        {\n            \"TrxId\": \"BSI00000000000000000" + trxid + "\",\n            \"MsgNam\": \"WMS.ART\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n    \"ArtNr\": \"00000" + artnr1 + "\",\n            \"ArtKnz2\": \"1\"\n        }\n    ]\n}";
+             */
 
+            String data = "{\n    \"PSIwmsMsg\": [\n        {\n            \"TrxId\": \"BSI00000000000000000" + trxid + "\",\n            \"MsgNam\": \"WMS.ART\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n    \"ArtNr\": \"00000" + artnr1 + "\",\n        \"ArtMhdTageZul\": \"1000\",\n    \"ArtMhdTageZulPlus\": \"1000\"\n        }\n    ]\n}";
+
+            /*
+            String data = "{\n    \"PSIwmsMsg\": [\n        {\n             \"TrxId\": \"BSI000000000000000000" + trxid + "\",\n             \"MsgNam\": \"WMS.ARTLTT\",\n            \"Werk\": \"0000\",\n            \"MndNr\": \"0001\",\n  \"ArtNr\": \"00000" + artnr1 + "\",\n    \"LttNam\": \"PF\",\n            \"ArtLttKnzDefltKom2\": \"1\"\n        }\n    ]\n}";
+            */
 
             byte[] out = data.getBytes(StandardCharsets.UTF_8);
 
@@ -49,6 +55,3 @@ public class Main {
 
     }
 }
-
-$2a$10$w3APgazPLB4ZOZzW7x3DxeTVJoF.ok7/./TD9n9EZxSgb5efQq52.
-
