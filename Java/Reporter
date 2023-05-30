@@ -1,1 +1,58 @@
+import java.sql.*;
 
+import oracle.jdbc.OracleDriver;
+
+public class Main {
+    public static void main(String[] args) throws SQLException {
+
+        String host = "10.14.229.47";
+        int    port = 1521       ;
+        String sid  = "petrpdb"       ;
+        String user = "PETRREADPROD"    ;
+        String pwd  = ""    ;
+
+        try (Connection conn = DriverManager.getConnection(
+                "jdbc:oracle:thin:@10.14.229.47:1521:petrpdb", "PETRREADPROD", "ZjlGfi")) {
+
+            if (conn != null) {
+                System.out.println("Connected to the database!");
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery("" +
+                        "select * from(select * from \n" +
+                        "(select auf,\n" +
+                        "row_number() over (partition by auf order by auf) as rn,\n" +
+                        "ifoutdzsnd\n" +
+                        "from \n" +
+                        "(select substr(ifoutparwws,1,instr(ifoutparwws, '|') -1) auf,\n" +
+                        "ifoutdzsnd\n" +
+                        "from PETR_S3_PDBA.ifout_t \n" +
+                        "where ifoutmldnam = 'WMS.VLD')) \n" +
+                        "where rn > 1\n" +
+                        "and auf != 'AufNr='\n" +
+                        "and substr(auf, -4,3) != 'RTZ'\n" +
+                        "order by ifoutdzsnd desc) \n" +
+                        "where ROWNUM <=1"
+                );
+
+                while (rs.next()) {
+                    String AUF = rs.getString("AUF");
+                    int RN = rs.getInt("RN");
+                    Date dzins = rs.getDate("ifoutdzsnd");
+
+                    System.out.println(" " + AUF + " " + RN + " " + dzins);
+
+                }
+
+            } else {
+                System.out.println("Failed to make connection!");
+            }
+
+        } catch (SQLException e) {
+            System.err.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+}
