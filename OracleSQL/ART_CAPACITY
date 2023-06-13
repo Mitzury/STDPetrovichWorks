@@ -2,20 +2,31 @@ with art as (select artid,artnr,artbez,etbnam,artelmsel, txt as img from PETR_S3
 left join PETR_S3_PDBA.txt_t txt on txt.txtobjid = art.artid and txt.txttyp = 530
 where artnr = :art),
 
-bst as (select artnr, art.artelmsel artwh, art.artbez, art.etbnam artetb, pl.plnam, pl.etbnam pletb, sum(bst.bstmg) bst, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as pllttbst, img from PETR_S3_PDBA.bst_t bst
-join art on art.artid = bst.artid
-left join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
-left join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam
+bst as (select artnr, art.artelmsel artwh, art.artbez, art.etbnam artetb, pl.plnam, pl.etbnam pletb, sum(bst.bstmg) bst, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as pllttbst, ltt.artlttmgmax as mgmax, img from PETR_S3_PDBA.bst_t bst
+right join art on art.artid = bst.artid
+join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
+join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam
+left join PETR_S3_PDBA.artltt_t ltt on art.artid = ltt.artid and
+(pl.pllng = ltt.artLTTlng
+and pl.plbre = ltt.artLTTBRE
+AND pl.plhoe = ltt.artLTTHOE)
 where regexp_like(pl.plnam, '^([0-9])+\w')
-group by artnr, art.artbez, art.artelmsel,art.etbnam, pl.plnam,pl.etbnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe, img),
+and pl.plklanam != 'PAL'
+group by artnr, art.artbez, art.artelmsel,art.etbnam, pl.plnam,pl.etbnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe, ltt.artlttmgmax, img),
 
-empty as (select pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb from  PETR_S3_PDBA.bst_t bst
-left join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
-left join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam
+empty as (select pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb, ltt.artlttmgmax as mgmax,img from  PETR_S3_PDBA.bst_t bst
+join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
+join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam
 join art on art.etbnam = pl.etbnam
-where bst.artid = 'EMPTY')
+left join PETR_S3_PDBA.artltt_t ltt on art.artid = ltt.artid and
+(pl.pllng = ltt.artLTTlng
+and pl.plbre = ltt.artLTTBRE
+AND pl.plhoe = ltt.artLTTHOE)
+where bst.artid = 'EMPTY'
+and pl.plklanam != 'PAL')
 
-
-select artnr,artbez,artwh,artetb,plnam,pletb,bst,img, pllttbst as plltt from bst
+select artnr,artbez,artwh,artetb,plnam,pletb,bst,  null as mgmax, img, pllttbst as plltt from bst
+union
+select '0' as artnr, null as artbez, null as artwh, null as artetb, plnam, pletb, null as bst, mgmax, img, plltt  from empty
 union 
-select '0' as artnr, null as artbez, null as artwh,null as artetb, plnam, pletb, null as bst, null as img, plltt  from empty
+select artnr,artbez, artelmsel as artwh, etbnam as artetb, '0' as plnam, null as pletb, null as bst, null as mgmax, img, null as plltt  from art
