@@ -1,0 +1,18 @@
+select 
+auf AUF,
+RN RN,
+ifoutdzsnd ifoutdzsnd
+from 
+(select auf,
+row_number() over (partition by auf order by auf) as rn,
+ifoutdzsnd
+from 
+(select substr(ifoutparwws,1,instr(ifoutparwws, '|') -1) auf,
+ifoutdzsnd
+from PETR_S3_PDBA.ifout_t 
+where ifoutmldnam = 'WMS.VLD')) 
+where rn > 1
+and auf != 'AufNr='
+and substr(auf, -4,3) NOT IN ('RTZ', 'RVP', 'ZVP')
+and ifoutdzsnd > (sysdate - interval '1' day)
+order by ifoutdzsnd desc
