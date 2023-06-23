@@ -1,8 +1,8 @@
 select 
-SUBSTR((SUBSTR(IFINPARWWS, (INSTR(IFINPARWWS, 'WeaNr=', 1)), 25)), 6) TRXID, 
+RTRIM(SUBSTR((SUBSTR(IFINPARWWS, (INSTR(IFINPARWWS, 'WeaNr=', 1)), 25)), 6), '\') TRXID, 
 substr(ifinparwws, 7, 11) ARTNR, 
 DZINS DZINS 
 from PETR_S3_PDBA.ifin_t 
 where sprakeynam = 'BsmDaoArt_T_NotFound' 
 and ifinfsrsta = 90
-and  dzins > (sysdate - interval '10' minute)
+and  dzins > (sysdate - interval '10000' minute)
