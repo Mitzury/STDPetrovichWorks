@@ -5,4 +5,4 @@ DZINS DZINS
 from PETR_S3_PDBA.ifin_t 
 where sprakeynam = 'BsmDaoArt_T_NotFound' 
 and ifinfsrsta = 90
-and  dzins > (sysdate - interval '10000' minute)
+and  dzins > (sysdate - interval '10' minute)
