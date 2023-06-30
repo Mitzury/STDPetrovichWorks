@@ -113,3 +113,12 @@ regexp_like(substr(tenam,1,3), '^([0-9])+\w')
 and ltt != lttnam
 and lttnam not in ('PF','VIRT_MIX')
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Кто поставил "Важный заказ"
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+with auf as (select aufnr, aufid, tournam, aufpriostart, aufprio, dzupd from petr_s3_pdba.auf_d where aufnr = 'TSEH0032876523RTD0'),
+evt as (select evtdz, anwnammld, evtobjid, evanam from petr_s3_pdba.evt_t where evanam = 'Auf.SetVipSta' or evanam = 'Auf.UnsetVipSta')
+
+select aufnr,tournam, aufprio, aufpriostart, evtdz, anwnammld, dzupd, evanam from auf 
+join evt on evt.evtobjid = auf.tournam or evt.evtobjid = auf.aufid
+where evtdz = dzupd
