@@ -1,0 +1,12 @@
+USE ReportServer
+select count(logentryid), c.Name from ExecutionLogStorage as e
+join Catalog as c on c.itemid = e.reportid
+group by c.name
+order by count(logentryid) desc
+
+
+select * from Catalog
+
+select e.UserName, c.Name, e.TimeEnd from ExecutionLogStorage as e
+join Catalog as c on c.itemid = e.reportid
+
