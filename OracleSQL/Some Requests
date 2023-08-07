@@ -122,3 +122,14 @@ evt as (select evtdz, anwnammld, evtobjid, evanam from petr_s3_pdba.evt_t where 
 select aufnr,tournam, aufprio, aufpriostart, evtdz, anwnammld, dzupd, evanam from auf 
 join evt on evt.evtobjid = auf.tournam or evt.evtobjid = auf.aufid
 where evtdz = dzupd
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Поиск мест с некорректной функцией места
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+select * from (
+select pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plpar, fktplpar  from PETR_S2_PDBA.pl_t pl
+left join PETR_S2_PDBA.fktpl_t fpl on pl.plnam = fpl.plnam
+where fktnam = 'Lvs.Tem.VirtTe')
+where plpar != fktplpar
+
