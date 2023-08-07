@@ -1,0 +1,22 @@
+update fktpl_t fpl
+set fpl.fktplpar = (
+                    with data as (
+                        select * from (
+                            select pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plpar, fktplpar  from pl_t pl
+                            left join fktpl_t fpl on pl.plnam = fpl.plnam
+                            where fktnam = 'Lvs.Tem.VirtTe')
+                            where plpar != fktplpar
+                                )
+                    select plpar from data where data.plnam = fpl.plnam
+                    )
+                
+where fpl.plnam IN (select plnam from (
+                        select pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plpar, fktplpar  from pl_t pl
+                        left join fktpl_t fpl on pl.plnam = fpl.plnam
+                        where fktnam = 'Lvs.Tem.VirtTe')
+                        where plpar != fktplpar
+                        )
+        and fpl.fktnam = 'Lvs.Tem.VirtTe'
+
+
+Скрипт делает выборку данных где ячейки имеют неправильные размеры в функции места и исправляет
