@@ -1,23 +1,27 @@
-WITH 
-    evt as (select substr(AnwNamMld, instr(AnwNamMld, '/') + 1, LENGTH(AnwNamMld)) as UserName, evanam from PETR_S2_PDBA.evt_t 
-        where to_char(dzins, 'DD.MM') = to_char((sysdate - 1), 'DD.MM') and AnwNamMld is not null),
-    EvaNamPickingTeFull as (select UserName from evt where evt.evanam = 'EvaNamPickingTeFull'),
-    EvaNamEscapePicking as (select UserName from evt where evt.evanam = 'EvaNamEscapePicking'),
-    LvsSrvElmExc00237 as (SELECT UserName from evt where evt.evanam = 'LvsSrvElmExc00237')
-
 select * from (
-    Select 
+Select 
     UserName as "Пользователь",
     EvaNamEscapePicking as "Нажал выход из отбора",
     LvsSrvElmExc00237 as "На отгрузке нажал место занято",
     EvaNamPickingTeFull as "Нажал ТЕ полное",
-    (EvaNamPickingTeFull + EvaNamEscapePicking + LvsSrvElmExc00237) as sum
+    AufVipSta as "Сделал важным заказ",
+    AufStornPick as "Нажал отмена сборки",
+    FinishPick as "Нажал завершить все",
+    (EvaNamPickingTeFull + EvaNamEscapePicking + LvsSrvElmExc00237 + AufVipSta + AufStornPick + FinishPick) as sum
     from (
-    select UserName,
-    (SELECT count(*) from EvaNamPickingTeFull where UserName = evt.UserName) as EvaNamPickingTeFull,
-    (SELECT count(*) from EvaNamEscapePicking where UserName = evt.UserName) as EvaNamEscapePicking,
-    (select count(*) from LvsSrvElmExc00237 where UserName = evt.UserName) as LvsSrvElmExc00237
-    from evt
-    group by UserName)
+select substr(AnwNamMld, instr(AnwNamMld, '/') + 1, LENGTH(AnwNamMld)) as UserName,
+       COUNT(CASE WHEN evt.evanam = 'EvaNamPickingTeFull' THEN 1 END) EvaNamPickingTeFull,
+       COUNT(CASE WHEN evt.evanam = 'EvaNamEscapePicking' THEN 1 END) EvaNamEscapePicking,
+       COUNT(CASE WHEN evt.evanam = 'LvsSrvElmExc00237' THEN 1 END) LvsSrvElmExc00237,
+       COUNT(CASE WHEN evt.evanam = 'Auf.SetVipSta' THEN 1 END) AufVipSta,
+       COUNT(CASE WHEN evt.evanam = 'Auf.StornPick' THEN 1 END) AufStornPick,
+       COUNT(CASE WHEN evt.evanam = 'EvaNamPickingFinishAll' THEN 1 END) FinishPick
+from PETR_S2_PDBA.evt_t evt
+        where dzins between :DATEBEFORE and :DATEAFTER
+        and AnwNamMld is not null 
+        and evanam in ('EvaNamPickingTeFull', 'EvaNamEscapePicking','LvsSrvElmExc00237', 'Auf.SetVipSta', 'Auf.StornPick', 'EvaNamPickingFinishAll')
+        group by substr(AnwNamMld, instr(AnwNamMld, '/') + 1, LENGTH(AnwNamMld))
+    )
+    where UserName Not like 'Tsk%'
     order by sum desc
-) where sum != 0
+)      where sum > 20
