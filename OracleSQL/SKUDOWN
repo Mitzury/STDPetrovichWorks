@@ -1,0 +1,28 @@
+select sum(tpahisid),artnr, artbez, artelmsel,
+case when ArtKlaABC = 1 then 'A'
+when ArtKlaABC = 2 then 'B'
+when ArtKlaABC = 3 then 'C'
+when ArtKlaABC = 4 then 'D' end as ArtKlaABC
+from
+(select COUNT (TPAHISID) as tpahisid, ANWNAM, WRH, TIME,artnr, artelmsel, artbez,ArtKlaABC from
+(select distinct tpahis.TPAHISID, tpahis.tenam, tpahis.ANWNAM, tpahis.DZINS, SUBSTR (tpahis.plnamezl, 1, 3) as WRH, to_char (tpahis.DZINS,'hh24') as TIME, artnr, art.artelmsel, artbez,ArtKlaABC from PETR_S2_PDBA.tpahis_t tpahis
+
+left join PETR_S2_PDBA.bsbw_t bsbw on bsbw.tenam = tpahis.tenam
+left join PETR_S2_PDBA.art_t art on art.artid = bsbw.artid 
+
+ where    tpahis.TPASTRAPHY = 'SLS' 
+ and      SUBSTR (tpahis.NAMINS, 8, 1) = '/' 
+ and      tpahis.TPATYPLOG = 30 
+ and      tpahis.TPATYPZULAG = 10
+ and      SUBSTR (tpahis.plnamezl, 1, 3) <> 'VRS'
+ and      art.artelmsel = :WAREHOUSE
+ --and art.artnr = '00000108499'
+ and      tpahis.DZINS BETWEEN :STARTDATE and :ENDDATE)
+
+group by 
+ANWNAM,
+TIME,
+WRH,
+artnr, artbez,ArtKlaABC, artelmsel)
+group by artnr, artbez,ArtKlaABC, artelmsel
+order by sum(tpahisid) desc, artbez
