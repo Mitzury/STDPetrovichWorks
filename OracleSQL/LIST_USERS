@@ -1,0 +1,1 @@
+select id, name, valid, comments from PETRPDBA.USERS where name like '%'||:PAR1||'%' or id like '%'||:PAR1||'%'
