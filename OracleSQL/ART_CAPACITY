@@ -17,10 +17,11 @@ case when art.artmgeh = 'MTP' then bst.bstmg / 1000 end as artlttmgmax from PETR
         where art.artnr = '00000984531'
 
 empty:
-select distinct pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, artlttmgmax from PETR_S3_PDBA.pl_t pl
+select distinct pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, case when art.artmgeh = 'MTP' then artltt.artlttmgmax  / 1000 else artltt.artlttmgmax end as artlttmgmax from PETR_S3_PDBA.pl_t pl
 left join PETR_S3_PDBA.te_t te on pl.plnam = te.plnam
 left join PETR_S3_PDBA.bst_t bst on bst.tenam = te.tenam
 join PETR_S3_PDBA.artltt_t artltt on artlttlng = pl.pllng and artltt.artlttbre = pl.plbre and artltt.artltthoe = pl.plhoe
+left join PETR_S3_PDBA.art_t art on art.artid = artltt.artid
 where 
 pl.plknzspreinl = 0
 and pl.plklanam = 'VIRTUELL'
