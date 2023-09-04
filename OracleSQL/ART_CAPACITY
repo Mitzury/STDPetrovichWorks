@@ -1,32 +1,31 @@
-with art as (select artid,artnr,artbez,etbnam,artelmsel, txt as img from PETR_S3_PDBA.art_t art
-left join PETR_S3_PDBA.txt_t txt on txt.txtobjid = art.artid and txt.txttyp = 530
-where artnr = :art),
+art:
+select distinct art.artnr, art.artbez, art.artelmsel, art.etbnam, art.artid, txt as img from PETR_S3_PDBA.art_t art
+         left join PETR_S3_PDBA.txt_t txt on txt.txtobjid = art.artid and txt.txttyp = 530
+            where art.artnr = '00000655945'
 
-bst as (select artnr, art.artelmsel artwh, art.artbez, art.etbnam artetb, pl.plnam, pl.etbnam pletb, sum(bst.bstmg) bst, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as pllttbst, ltt.artlttmgmax as mgmax, img from PETR_S3_PDBA.bst_t bst
-right join art on art.artid = bst.artid
-join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
-join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam
-left join PETR_S3_PDBA.artltt_t ltt on art.artid = ltt.artid and
-(pl.pllng = ltt.artLTTlng
-and pl.plbre = ltt.artLTTBRE
-AND pl.plhoe = ltt.artLTTHOE)
-where regexp_like(pl.plnam, '^([0-9])+\w')
-and pl.plklanam != 'PAL'
-group by artnr, art.artbez, art.artelmsel,art.etbnam, pl.plnam,pl.etbnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe, ltt.artlttmgmax, img),
+bst:
+select bst.artid, pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb, bst.bstmg, ltt.artlttmgmax from PETR_S3_PDBA.bst_t bst
+    join PETR_S3_PDBA.art_t art on bst.artid = art.artid
+    join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
+    join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam and plklanam = 'VIRTUELL' and regexp_like(pl.plnam, '^([0-9])+\w')
+    join PETR_S3_PDBA.artltt_t ltt on art.artid = ltt.artid and
+        (pl.pllng = ltt.artLTTlng
+        and pl.plbre = ltt.artLTTBRE
+        AND pl.plhoe = ltt.artLTTHOE)
+        where art.artnr = '00001016569'
 
-empty as (select pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb, ltt.artlttmgmax as mgmax,img from  PETR_S3_PDBA.bst_t bst
-join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
-join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam
-join art on art.etbnam = pl.etbnam
-left join PETR_S3_PDBA.artltt_t ltt on art.artid = ltt.artid and
-(pl.pllng = ltt.artLTTlng
-and pl.plbre = ltt.artLTTBRE
-AND pl.plhoe = ltt.artLTTHOE)
-where bst.artid = 'EMPTY'
-and pl.plklanam != 'PAL')
+empty:
+select distinct pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, artlttmgmax from PETR_S3_PDBA.pl_t pl
+left join PETR_S3_PDBA.te_t te on pl.plnam = te.plnam
+left join PETR_S3_PDBA.bst_t bst on bst.tenam = te.tenam
+join PETR_S3_PDBA.artltt_t artltt on artlttlng = pl.pllng and artltt.artlttbre = pl.plbre and artltt.artltthoe = pl.plhoe
+where 
+pl.plknzspreinl = 0
+and pl.plklanam = 'VIRTUELL'
+and pl.etbnam = '0161'
+and bst.artid = 'EMPTY'
+and artltt.artid like '%00001016569'
 
-select artnr,artbez,artwh,artetb,plnam,pletb,bst,  null as mgmax, img, pllttbst as plltt from bst
-union
-select '0' as artnr, null as artbez, null as artwh, null as artetb, plnam, pletb, null as bst, mgmax, img, plltt  from empty
-union 
-select artnr,artbez, artelmsel as artwh, etbnam as artetb, '0' as plnam, null as pletb, null as bst, null as mgmax, img, null as plltt  from art
+lttnam:
+select lttnam, artlttlng||'*'||artlttbre||'*'||artltthoe as artltt from PETR_S3_PDBA.artltt_t where artid like '%00001016569'
+and regexp_like(lttnam, '[a-z]')
