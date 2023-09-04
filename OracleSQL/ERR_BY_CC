@@ -3,14 +3,16 @@ bsbw.tenam Te,
 substr(bsbw.aufid, 9,19) as auf,
 substr(bsbw.namins, instr(bsbw.namins, '/') + 1, LENGTH(bsbw.namins)) as CCcreator,
 substr(bsbw.artid, 9,11) as ArtId, 
+art.artelmsel as ArtWH,
 art.artbez as ArtDesc, 
 bsbw.bstmgvor as ItemBefore, 
 bsbw.bstmgnach as ItemAfter, 
 bsbw.dzins as CCcreateTime, 
+to_char(bsbw.dzins, 'DD.MM.YYYY') as CCcreateDate, 
 substr(te.namins, instr(te.namins, '/') + 1, LENGTH(te.namins)) as TeCreator, 
 te.dzins as TeCreateTime
-from PETR_S2_PDBA.bsbw_t bsbw 
-left join PETR_S2_PDBA.te_t te on te.tenam = bsbw.tenam
-left join PETR_S2_PDBA.art_t art on art.artid = bsbw.artid
+from PETR_S3_PDBA.bsbw_t bsbw 
+left join PETR_S3_PDBA.te_t te on te.tenam = bsbw.tenam
+left join PETR_S3_PDBA.art_t art on art.artid = bsbw.artid
 where bsbwart = '80' and
 bsbw.dzins between :DATEBEFORE and :DATEAFTER
