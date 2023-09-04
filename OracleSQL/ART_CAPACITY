@@ -1,7 +1,15 @@
 art:
-select distinct art.artnr, art.artbez, art.artelmsel, art.etbnam, art.artid, txt as img from PETR_S3_PDBA.art_t art
-         left join PETR_S3_PDBA.txt_t txt on txt.txtobjid = art.artid and txt.txttyp = 530
-            where art.artnr = '00000655945'
+select art.artnr, art.artbez, art.artelmsel, art.etbnam, art.artid, 
+case artmgeh 
+when 'NRL' then 'Рулон'
+when 'PCE' then 'Шт.' 
+when 'MTP' then 'М.п.' 
+when 'PA' then 'Пара' 
+else artmgeh end as artmgeh,
+txt as img from PETR_S3_PDBA.art_t art
+            left join PETR_S3_PDBA.txt_t txt on txt.txtobjid = art.artid and txt.txttyp = 530
+            where art.artnr = :artnr
+and ROWNUM = 1
 
 bst:
 select bst.artid, pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb, 
