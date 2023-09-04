@@ -4,7 +4,9 @@ select distinct art.artnr, art.artbez, art.artelmsel, art.etbnam, art.artid, txt
             where art.artnr = '00000655945'
 
 bst:
-select bst.artid, pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb, bst.bstmg, ltt.artlttmgmax from PETR_S3_PDBA.bst_t bst
+select bst.artid, pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb, 
+case when art.artmgeh = 'MTP' then bst.bstmg / 1000 end as bstmg, 
+case when art.artmgeh = 'MTP' then bst.bstmg / 1000 end as artlttmgmax from PETR_S3_PDBA.bst_t bst
     join PETR_S3_PDBA.art_t art on bst.artid = art.artid
     join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
     join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam and plklanam = 'VIRTUELL' and regexp_like(pl.plnam, '^([0-9])+\w')
@@ -12,7 +14,7 @@ select bst.artid, pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.
         (pl.pllng = ltt.artLTTlng
         and pl.plbre = ltt.artLTTBRE
         AND pl.plhoe = ltt.artLTTHOE)
-        where art.artnr = '00001016569'
+        where art.artnr = '00000984531'
 
 empty:
 select distinct pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, artlttmgmax from PETR_S3_PDBA.pl_t pl
