@@ -39,4 +39,4 @@ where rn > 1
 order by artnr, bstempty desc
 )
 where (bstdzmhd is not null and mhdmix = 1) or (bstdzmhd is null and mhdmix = 0)
-) where (chto = 1 and kuda = 0) or (chto = 0 and kuda = 1)
+)  where (chto = 1 and kuda = 0) or (chto = 0 and kuda = 1) or (chto = 1 and kuda = 1)
