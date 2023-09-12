@@ -1,3 +1,4 @@
+select * from (
 select 
 artnr, artbez, etbnam, bstcurrent ,bstmax,bstempty, plnam,
 case  when bstcurrent < lag (bstempty) over (partition by artnr order by bstempty desc) then 1 else 0 end as chto,
@@ -7,30 +8,35 @@ bstchgnam, bstdzmhd, artmhdtagezul, artmhdtagezulplus, mhdmix from
 select 
 artnr, artbez, etbnam, bstcurrent ,bstmax,bstempty, plnam,
 lead (bstcurrent) over (partition by artnr order by bstempty desc) as upl, bstchgnam, bstdzmhd, artmhdtagezul, artmhdtagezulplus, mhdmix from
-(select 
-count(artnr) over (partition by artnr order by artnr) rn,
-art.artnr, art.artbez, art.etbnam, 
-bst.bstmg as bstcurrent, 
-artltt.artlttmgmax as bstmax,
-artlttmgmax - bstmg as bstempty,
-pl.plnam, bst.bstchgnam, bst.bstdzmhd, art.artmhdtagezul,  art.artmhdtagezulplus, bst.bstseriennr,
-
-case 
-when bst.bstdzmhd is not null and bst.bstdzmhd between lag (bst.bstdzmhd - art.artmhdtagezul) over (partition by artnr order by artnr) and lag (bst.bstdzmhd + art.artmhdtagezul) over (partition by artnr order by artnr) then 1
-else 0 end as mhdmix
-
-from PETR_S3_PDBA.bst_t bst
-left join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
-join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
-left join PETR_S3_PDBA.art_t art on art.artid = bst.artid
-left join PETR_S3_PDBA.res_t res on bst.bstid = res.bstid
-left join PETR_S3_PDBA.artltt_t artltt on bst.artid = artltt.artid and (pl.plhoe = artltt.artltthoe and pl.pllng = artltt.artlttlng and pl.plbre = artltt.artlttbre)
-where
-bst.bstseriennr is null and
-bst.artid != 'EMPTY'
-and pl.benam in ('03N')
-and res.resmg is null)
+            -- Выборка данных для анализа
+            (select 
+            count(artnr) over (partition by artnr order by artnr) rn,
+            art.artnr, 
+            art.artbez, 
+            art.etbnam, 
+            bst.bstmg as bstcurrent, 
+            artltt.artlttmgmax as bstmax,
+            artlttmgmax - bstmg as bstempty,
+            pl.plnam, bst.bstchgnam, bst.bstdzmhd, art.artmhdtagezul, art.artmhdtagezulplus, bst.bstseriennr,
+            -- Выборка срока смешиваемости
+            case when 
+                    bst.bstdzmhd is not null
+                    and bst.bstdzmhd between lag (bst.bstdzmhd - art.artmhdtagezul) over (partition by artnr order by artnr) and lag (bst.bstdzmhd + art.artmhdtagezul) over (partition by artnr order by artnr) then 1
+                else 0 end as mhdmix
+            from PETR_S3_PDBA.bst_t bst
+                left join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
+                join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
+                left join PETR_S3_PDBA.art_t art on art.artid = bst.artid
+                left join PETR_S3_PDBA.res_t res on bst.bstid = res.bstid
+                left join PETR_S3_PDBA.artltt_t artltt on bst.artid = artltt.artid and (pl.plhoe = artltt.artltthoe and pl.pllng = artltt.artlttlng and pl.plbre = artltt.artlttbre)
+            where
+            -- Не показывать маркированные товары
+                bst.bstseriennr is null 
+                and bst.artid != 'EMPTY'
+                and pl.benam IN (:benam)
+                and res.resmg is null)
 where rn > 1
 order by artnr, bstempty desc
 )
 where (bstdzmhd is not null and mhdmix = 1) or (bstdzmhd is null and mhdmix = 0)
+) where (chto = 1 and kuda = 0) or (chto = 0 and kuda = 1)
