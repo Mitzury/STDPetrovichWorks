@@ -133,3 +133,10 @@ left join PETR_S2_PDBA.fktpl_t fpl on pl.plnam = fpl.plnam
 where fktnam = 'Lvs.Tem.VirtTe')
 where plpar != fktplpar
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Поиск артикулов с неразрывным пробелом
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+select artnr, artbez from PETR_S3_PDBA.art_t where REGEXP_LIKE(artbez,'[' ||unistr('\00A0')|| ']');
+
+
