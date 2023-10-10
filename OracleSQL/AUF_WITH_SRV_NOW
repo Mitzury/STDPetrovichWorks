@@ -1,0 +1,35 @@
+select *
+from 
+(Select 
+    Auf.Aufnr,
+    CASE    WHEN Auf.Auanam = 'RTK' THEN 'КЛИЕНТ'
+            WHEN Auf.Auanam = 'RTD' THEN 'ДОСТАВКА'
+            WHEN Auf.Auanam = 'SPI' THEN 'СПИСАНИЕ'
+            WHEN Auf.Auanam = 'ZVP' THEN 'ПОСТАВЩИК'
+            WHEN Auf.Auanam = 'RVP' THEN 'ПЕРЕМЕЩЕНИЕ'
+            WHEN Auf.Auanam = 'RTZ' THEN 'ТЗ'
+            WHEN(Auf.Auanam = 'RTP' or Auf.Auanam = 'RTS') THEN 'СП'
+            WHEN Auf.Auanam = 'RTI' THEN 'ИЗ' 
+            END type,
+            Nvl2(Bsts.Plnam, Bsts.Plnam, 'Планируемая дата:' || ' ' || to_char(Auf.Aufdzstartsoll, 'DD.MM.YYYY HH24:MI')) as bst, auf.aufanzaup, art.artelmsel, Art.Artnr, Art.Artbez, 
+            
+    case    Art.Artmgeh
+            when 'MTP' then aup.aupmgsoll / 1000 || ' ' || Art.Artmgeh
+            else aup.aupmgsoll || ' ' || Art.Artmgeh
+            end mg,
+    Case    When Aup.Aupinfo1 Is Not Null Then 'К' 
+            When Txt.Txt Is Not Null Then 'Р' 
+            When Aup.Aupinfo1 Is Not Null And Txt.Txt Is Not Null Then 'К+Р' 
+            Else Aup.Aupinfo1 End as uslugi,
+    txt.txt
+From Petr_S3_Pdba.Auf_T Auf
+    Join Petr_S3_Pdba.Aup_T Aup On Auf.Aufid = Aup.Aufid
+    Join Petr_S3_Pdba.Art_T Art On Aup.Artid = Art.Artid
+    Left Join (Select Pl.Plnam, Bst.Artid, Bst.aufid From Petr_S3_Pdba.Bst_T Bst
+                    Join Petr_S3_Pdba.Te_T Te On Bst.Tenam = Te.Tenam
+                    Join Petr_S3_Pdba.Pl_T Pl On Pl.Plnam = Te.Plnam
+                    ) Bsts On bsts.aufid = auf.aufid and  Bsts.Artid = Aup.Artid 
+    Left Join Petr_S3_Pdba.Txt_T Txt On Txt.Txtobjid = Auf.Aufid And Txt.Txttabref = 'AUF' And Txt.Txtobjnr = Aup.Aupnr
+Where Auf.Auffsrsta != '700'
+and art.artelmsel in ('07A','08A','08B','08C','09A','09B','09D','09F','09G','10A','10B','10C','10D','10F','11A','12A','12B','12C','12D','12E','12F','12G','12H','12L'))
+where uslugi is not null
