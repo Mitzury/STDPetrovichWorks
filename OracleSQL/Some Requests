@@ -142,4 +142,9 @@ select artnr, artbez from PETR_S3_PDBA.art_t where REGEXP_LIKE(artbez,'[' ||unis
 update petr_s3_pdba.art_t
 set artbez = REGEXP_REPLACE(artbez, '[' ||unistr('\00A0')|| ']', ' ',1)
  where REGEXP_LIKE(artbez,'[' ||unistr('\00A0')|| ']')
- 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Просмотр и редактирование масок
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+select * from PETR_S3_tdBA.mdtmskdef_t where msknam = 'MdtArtikelInfo'
+
