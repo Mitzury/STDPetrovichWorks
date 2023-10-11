@@ -139,4 +139,7 @@ where plpar != fktplpar
 # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 select artnr, artbez from PETR_S3_PDBA.art_t where REGEXP_LIKE(artbez,'[' ||unistr('\00A0')|| ']');
 
-
+update petr_s3_pdba.art_t
+set artbez = REGEXP_REPLACE(artbez, '[' ||unistr('\00A0')|| ']', ' ',1)
+ where REGEXP_LIKE(artbez,'[' ||unistr('\00A0')|| ']')
+ 
