@@ -13,10 +13,19 @@ from
             END type,
             Nvl2(Bsts.Plnam, Bsts.Plnam, 'Планируемая дата:' || ' ' || to_char(Auf.Aufdzstartsoll, 'DD.MM.YYYY HH24:MI')) as bst, auf.aufanzaup, art.artelmsel, Art.Artnr, Art.Artbez, 
             
-    case    Art.Artmgeh
-            when 'MTP' then aup.aupmgsoll / 1000 || ' ' || Art.Artmgeh
-            else aup.aupmgsoll || ' ' || Art.Artmgeh
-            end mg,
+    case    Art.Artmgeh 
+            when 'MTP' then aup.aupmgsoll / 1000
+            else aup.aupmgsoll
+            end  
+    || ' ' ||
+    case Art.Artmgeh
+            when 'PCE' then 'шт.'
+            when 'PA' then 'упк.'
+            when 'NRL' then 'рул.'
+            when 'MTP' then 'м.п.'
+            when 'LEF' then 'лист'
+    else '' end as mg, 
+
     Case    When Aup.Aupinfo1 Is Not Null Then 'К' 
             When Txt.Txt Is Not Null Then 'Р' 
             When Aup.Aupinfo1 Is Not Null And Txt.Txt Is Not Null Then 'К+Р' 
