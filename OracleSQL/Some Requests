@@ -148,3 +148,15 @@ set artbez = REGEXP_REPLACE(artbez, '[' ||unistr('\00A0')|| ']', ' ',1)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 select * from PETR_S3_tdBA.mdtmskdef_t where msknam = 'MdtArtikelInfo'
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Количество заказов по артикулам определенного склада за определенный период
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+select * from (
+select artnr,artbez, artelmsel, artinfo9, nvl(aup.count, '0') count from petr_s2_pdba.art_t art
+left join (select sum (count) count, artid from (select count(aufid) count, artid from petr_s2_pdba.aup_t where to_char(dzins, 'MM.YYYY') in ('08.2023', '09.2023', '10.2023') group by artid, to_char(dzins, 'MM.YYYY'))
+            group by artid) aup on aup.artid = art.artid
+where art.artelmsel like '06%' or art.artelmsel like '07%')
+where count != 0
+order by count desc
+
