@@ -36,3 +36,28 @@ END
 where plnam IN (
 '01A03020301',
 '01A03020302',
+
+
+########################################
+# Перевод
+########################################
+select * from petr_s3_pdba.sprakeypar_t 
+where
+spranam = 'ru'
+and
+sprakeyparvalue like '%заданий'
+
+update petr_s3_pdba.sprakeypar_t 
+set sprakeyparvalue = 'Сп. заданий'
+where sprakeynam in 
+(
+'MS.MdtAnfQlKomSrTe.LButtonTaskList',
+'MS.MdtKomPopupZielTe.LButtonTaskList',
+'MS.MdtAnfQlKommi.LButtonTaskList',
+'MS.MdtAnfZlKommi.LButtonTaskList',
+'MS.MdtAnfKomSrnPick.LButtonTaskList',
+'MS.MdtVldNKommi.LButtonTaskList',
+'MS.MdtVldNKommiQty.LButtonTaskList',
+'MS.MdtSlsEntnahme.LButtonTaskList'
+)
+and spranam = 'ru'
