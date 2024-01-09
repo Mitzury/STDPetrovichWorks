@@ -1,12 +1,25 @@
 select * from (
 select 
-artnr, artbez, etbnam, bstcurrent ,bstmax,bstempty, plnam,
+artnr, artbez, 
+case artklaabc
+    when 1 then 'A'
+    when 2 then 'B'
+    when 3 then 'C'
+    when 4 then 'D'
+    end as artklaabc, 
+etbnam, bstcurrent ,bstmax,bstempty, plnam, 
+    case plklaabc
+    when 1 then 'A'
+    when 2 then 'B'
+    when 3 then 'C'
+    when 4 then 'D'
+    end as plklaabc,
 case  when bstcurrent < lag (bstempty) over (partition by artnr order by bstempty desc) then 1 else 0 end as chto,
 case  when bstempty > lead (bstcurrent) over (partition by artnr order by bstempty desc) then 1 else 0 end as kuda,
 bstchgnam, bstdzmhd, artmhdtagezul, artmhdtagezulplus, mhdmix from
 (
 select 
-artnr, artbez, etbnam, bstcurrent ,bstmax,bstempty, plnam,
+artnr, artbez, etbnam, artklaabc, bstcurrent ,bstmax,bstempty, plnam, plklaabc,
 lead (bstcurrent) over (partition by artnr order by bstempty desc) as upl, bstchgnam, bstdzmhd, artmhdtagezul, artmhdtagezulplus, mhdmix from
             -- Выборка данных для анализа
             (select 
@@ -14,15 +27,15 @@ lead (bstcurrent) over (partition by artnr order by bstempty desc) as upl, bstch
             art.artnr, 
             art.artbez, 
             art.etbnam, 
-            bst.bstmg as bstcurrent, 
-            artltt.artlttmgmax as bstmax,
-            artlttmgmax - bstmg as bstempty,
-            pl.plnam, bst.bstchgnam, bst.bstdzmhd, art.artmhdtagezul, art.artmhdtagezulplus, bst.bstseriennr,
-            -- Выборка срока смешиваемости
+            art.artklaabc,
+            case when art.artmgehwws = 'MTP' then bst.bstmg / 1000 else bst.bstmg end as bstcurrent,
+            case when art.artmgehwws = 'MTP' then artltt.artlttmgmax / 1000 else artltt.artlttmgmax end as bstmax,
+            case when art.artmgehwws = 'MTP' then (artlttmgmax - bstmg) / 1000 else artlttmgmax - bstmg end as bstempty,
+            pl.plnam, pl.plklaabc, bst.bstchgnam, bst.bstdzmhd, art.artmhdtagezul, art.artmhdtagezulplus, bst.bstseriennr,
             case when 
                     bst.bstdzmhd is not null
                     and bst.bstdzmhd between lag (bst.bstdzmhd - art.artmhdtagezul) over (partition by artnr order by artnr) and lag (bst.bstdzmhd + art.artmhdtagezul) over (partition by artnr order by artnr) then 1
-                else 0 end as mhdmix
+                else 0 end as mhdmix -- Выборка срока смешиваемости
             from PETR_S3_PDBA.bst_t bst
                 left join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
                 join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
@@ -30,13 +43,13 @@ lead (bstcurrent) over (partition by artnr order by bstempty desc) as upl, bstch
                 left join PETR_S3_PDBA.res_t res on bst.bstid = res.bstid
                 left join PETR_S3_PDBA.artltt_t artltt on bst.artid = artltt.artid and (pl.plhoe = artltt.artltthoe and pl.pllng = artltt.artlttlng and pl.plbre = artltt.artlttbre)
             where
-            -- Не показывать маркированные товары
-                bst.bstseriennr is null 
+                bst.bstseriennr is null   -- Не показывать маркированные товары
                 and bst.artid != 'EMPTY'
                 and pl.benam IN (:benam)
+                and pl.etbnam like :etbnam
                 and res.resmg is null)
 where rn > 1
 order by artnr, bstempty desc
 )
 where (bstdzmhd is not null and mhdmix = 1) or (bstdzmhd is null and mhdmix = 0)
-)  where (chto = 1 and kuda = 0) or (chto = 0 and kuda = 1) or (chto = 1 and kuda = 1)
+) where (chto = 1 and kuda = 0) or (chto = 0 and kuda = 1) or (chto = 1 and kuda = 1)
