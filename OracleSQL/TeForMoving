@@ -1,0 +1,40 @@
+with 
+auf as (select auf.aufknzstorno as cansel, auf.auffsrsta, auf.aufnr, auf.aufid, auf.tournam, aup.artid, art.artelmsel, bst.tenam, te.plnam from PETR_S3_PDBA.auf_t auf
+        left join PETR_S3_PDBA.aup_T aup on aup.aufid = auf.aufid
+        left join PETR_S3_PDBA.art_t art on aup.artid = art.artid
+        left join PETR_S3_PDBA.bst_t bst on bst.aufid = auf.aufid and aup.artid = bst.artid
+        left join PETR_S3_PDBA.te_t te   on bst.tenam = te.tenam
+        where auf.tournam = :tournam)
+select * from(    
+select auf.aufnr, cansel, auffsrsta, auf.tournam, artelmsel, substr(tenam,1,7) as first7te, substr(tenam,-4) as last4te, plnam,
+case
+    when plnam like 'VRS%' then tenam
+    else '1' end as complete,
+case 
+    when plnam not like 'VRS%' or plnam not like 'AUS%'  then (select listagg(artelmsel, ',') WITHIN GROUP (ORDER BY artelmsel) from auf where plnam not like 'VRS%') 
+    end as listagg
+from auf
+)
+
+===================================================
+=
+===================================================
+
+with 
+auf as (select auf.aufknzstorno as cansel, auf.auffsrsta, auf.aufnr, auf.aufid, auf.tournam, aup.artid, art.artelmsel, bst.tenam, te.plnam from PETR_S3_PDBA.auf_t auf
+        left join PETR_S3_PDBA.aup_T aup on aup.aufid = auf.aufid
+        left join PETR_S3_PDBA.art_t art on aup.artid = art.artid
+        left join PETR_S3_PDBA.bst_t bst on bst.aufid = auf.aufid and aup.artid = bst.artid
+        left join PETR_S3_PDBA.te_t te   on bst.tenam = te.tenam
+        where auf.tournam = :tournam)
+select listagg(artelmsel, ',') WITHIN GROUP (ORDER BY artelmsel) from (
+select distinct artelmsel from(    
+select auf.aufnr, cansel, auffsrsta, auf.tournam, artelmsel, substr(tenam,1,7) as first7te, substr(tenam,-4) as last4te, plnam,
+case
+    when plnam like 'VRS%' then tenam
+    else '1' end as complete,
+case 
+    when plnam not like 'VRS%' or plnam not like 'AUS%' then (select listagg(artelmsel, ',') WITHIN GROUP (ORDER BY artelmsel) from auf where plnam not like 'VRS%') 
+    end as listagg
+from auf
+))
