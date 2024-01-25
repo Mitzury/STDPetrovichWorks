@@ -1,0 +1,39 @@
+
+DECLARE @_WRH INT,
+@_AUFS INT,
+@_LINE_NOW INT,
+@_LINE_30MIN INT,
+@_LINE_15MIN INT,
+@_LINE_5MIN INT,
+@_USERS INT
+ 
+
+ BEGIN
+ IF NOT EXISTS (SELECT * FROM STD_MRM_ETL_ORDERS_IN_WORK)
+    BEGIN
+       INSERT INTO STD_MRM_ETL_ORDERS_IN_WORK (WRH, AUFS, LINE_NOW, LINE_30MIN, LINE_15MIN, LINE_5MIN, USERS)
+            VALUES (@_WRH, @_AUFS, @_LINE_NOW, @_LINE_30MIN, @_LINE_15MIN, @_LINE_5MIN, @_USERS)
+       (select WRH = @_WRH, 
+            AUFS = @_AUFS, 
+            LINE_NOW = @_LINE_NOW, 
+            LINE_30MIN = @_LINE_30MIN, 
+            LINE_15MIN = @_LINE_15MIN, 
+            LINE_5MIN = @_LINE_5MIN, 
+            USERS = @_USERS 
+       from openquery (ORACLE_MRM, 'select * from STD_PICK_MIN'))
+    END
+ELSE
+    BEGIN  
+        UPDATE STD_MRM_ETL_ORDERS_IN_WORK
+        SET 
+            STD_MRM_ETL_ORDERS_IN_WORK.WRH = [СКЛАД],
+			AUFS = [КОЛВО_ЗАКАЗОВ],
+            LINE_NOW = [СБОРКИ_СЕЙЧАС],
+            LINE_30MIN = [СОБРАНО_ЗА_ПРОШЛЫЕ_30МИН],
+            LINE_15MIN = [СОБРАНО_ЗА_ПРОШЛЫЕ_15МИН],
+            LINE_5MIN = [СОБРАНО_ЗА_ПРОШЛЫЕ_5МИН],
+            USERS = [КОЛ_ПОЛЬЗОВАТЕЛЕЙ]
+       from openquery (ORACLE_MRM, 'select * from STD_PICK_MIN')
+	   where STD_MRM_ETL_ORDERS_IN_WORK.WRH = [СКЛАД]
+    END
+END
