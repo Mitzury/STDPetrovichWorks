@@ -1,39 +1,123 @@
-
 DECLARE @_WRH INT,
 @_AUFS INT,
 @_LINE_NOW INT,
 @_LINE_30MIN INT,
 @_LINE_15MIN INT,
 @_LINE_5MIN INT,
-@_USERS INT
- 
+@_USERS INT,
+@LISTWH INT,
+@sql NVARCHAR(MAX),
+@sql2 NVARCHAR(MAX),
+@COUNT INT
+SET @COUNT = 1
 
- BEGIN
+BEGIN
+select @LISTWH = LISTHW from openquery (ORACLE_MRM, 'select count (distinct substr(benam,1,2)) as LISTHW from PETR_S3_PDBA.pl_t
+       where regexp_like(benam, ''^([0-9]){2}\D{1}'') order by 1')
+
  IF NOT EXISTS (SELECT * FROM STD_MRM_ETL_ORDERS_IN_WORK)
+
+ WHILE @COUNT <= @LISTWH
     BEGIN
        INSERT INTO STD_MRM_ETL_ORDERS_IN_WORK (WRH, AUFS, LINE_NOW, LINE_30MIN, LINE_15MIN, LINE_5MIN, USERS)
-            VALUES (@_WRH, @_AUFS, @_LINE_NOW, @_LINE_30MIN, @_LINE_15MIN, @_LINE_5MIN, @_USERS)
-       (select WRH = @_WRH, 
-            AUFS = @_AUFS, 
-            LINE_NOW = @_LINE_NOW, 
-            LINE_30MIN = @_LINE_30MIN, 
-            LINE_15MIN = @_LINE_15MIN, 
-            LINE_5MIN = @_LINE_5MIN, 
-            USERS = @_USERS 
-       from openquery (ORACLE_MRM, 'select * from STD_PICK_MIN'))
+            VALUES (@COUNT, @_AUFS, @_LINE_NOW, @_LINE_30MIN, @_LINE_15MIN, @_LINE_5MIN, @_USERS)
+	SET @COUNT = @COUNT + 1
     END
 ELSE
-    BEGIN  
+-- STD_PICK_MIN
+CREATE TABLE #STD_PICK_MIN
+(	[WRH] [int] NULL,
+	[AUFS] [int] NULL,
+	[LINE_NOW] [int] NULL,
+	[LINE_30MIN] [int] NULL,
+	[LINE_15MIN] [int] NULL,
+	[LINE_5MIN] [int] NULL,
+	[USERS] [int] NULL,
+)
+
+INSERT INTO #STD_PICK_MIN (WRH, AUFS, LINE_NOW, LINE_30MIN, LINE_15MIN, LINE_5MIN, USERS)
+  select 
+			[СКЛАД],
+			[КОЛВО_ЗАКАЗОВ],
+            [СБОРКИ_СЕЙЧАС],
+            [СОБРАНО_ЗА_ПРОШЛЫЕ_30МИН],
+            [СОБРАНО_ЗА_ПРОШЛЫЕ_15МИН],
+            [СОБРАНО_ЗА_ПРОШЛЫЕ_5МИН],
+            [КОЛ_ПОЛЬЗОВАТЕЛЕЙ]
+			from openquery (ORACLE_MRM, 'select * from STD_PICK_MIN')
+
+    SET @COUNT = 1
+    WHILE @COUNT <= @LISTWH
+	 BEGIN
+		UPDATE STD_MRM_ETL_ORDERS_IN_WORK
+        SET 
+			AUFS = 0,
+            LINE_NOW = 0,
+            LINE_30MIN = 0,
+            LINE_15MIN = 0,
+            LINE_5MIN = 0,
+            USERS = 0
+			where STD_MRM_ETL_ORDERS_IN_WORK.WRH = @COUNT
+
         UPDATE STD_MRM_ETL_ORDERS_IN_WORK
         SET 
-            STD_MRM_ETL_ORDERS_IN_WORK.WRH = [СКЛАД],
-			AUFS = [КОЛВО_ЗАКАЗОВ],
-            LINE_NOW = [СБОРКИ_СЕЙЧАС],
-            LINE_30MIN = [СОБРАНО_ЗА_ПРОШЛЫЕ_30МИН],
-            LINE_15MIN = [СОБРАНО_ЗА_ПРОШЛЫЕ_15МИН],
-            LINE_5MIN = [СОБРАНО_ЗА_ПРОШЛЫЕ_5МИН],
-            USERS = [КОЛ_ПОЛЬЗОВАТЕЛЕЙ]
-       from openquery (ORACLE_MRM, 'select * from STD_PICK_MIN')
-	   where STD_MRM_ETL_ORDERS_IN_WORK.WRH = [СКЛАД]
+            WRH = #STD_PICK_MIN.WRH,
+			AUFS = #STD_PICK_MIN.AUFS,
+            LINE_NOW = #STD_PICK_MIN.LINE_NOW,
+            LINE_30MIN = #STD_PICK_MIN.LINE_30MIN,
+            LINE_15MIN = #STD_PICK_MIN.LINE_15MIN,
+            LINE_5MIN = #STD_PICK_MIN.LINE_5MIN,
+            USERS = #STD_PICK_MIN.USERS
+       from #STD_PICK_MIN 
+	   where STD_MRM_ETL_ORDERS_IN_WORK.WRH = #STD_PICK_MIN.WRH
+	   SET @COUNT = @COUNT + 1
     END
+	drop table #STD_PICK_MIN
+
+	---STD VIEW TPA
+		CREATE TABLE #STD_VIEW_TPA
+		(	[WRH] NVARCHAR(10) NULL,
+			[ONE_DAY] NVARCHAR(10) NULL,
+			[TWO_DAY] NVARCHAR(10) NULL,
+			[FIVE_DAY] NVARCHAR(10) NULL,
+			[MORE_DAY] NVARCHAR(10) NULL,
+		)
+		
+		INSERT INTO #STD_VIEW_TPA (WRH, ONE_DAY, TWO_DAY, FIVE_DAY, MORE_DAY)
+		select 
+			[СКЛАД],
+			[ОДИН_ДЕНЬ_БЕЗ_ДВИЖЕНИЯ],
+            [ДВА_ДНЯ_БЕЗ_ДВИЖЕНИЯ],
+            [ПЯТЬ_ДНЕЙ_БЕЗ_ДВИЖЕНИЯ],
+            [БОЛЕЕ_ПЯТИ_ДНЕЙ_БЕЗ_ДВИЖЕНИЯ]
+			from openquery (ORACLE_MRM, '
+			select substr(склад,1,2) as СКЛАД,
+			Sum(substr(один_день_без_движения, 1, (instr(один_день_без_движения, ''\'')-1))) ||''/''||Sum(substr(один_день_без_движения,(instr(один_день_без_движения, ''\'')+1))) as ОДИН_ДЕНЬ_БЕЗ_ДВИЖЕНИЯ,
+			Sum(substr(два_дня_без_движения, 1, (instr(два_дня_без_движения, ''\'')-1))) ||''/''||Sum(substr(два_дня_без_движения,(instr(два_дня_без_движения, ''\'')+1))) as ДВА_ДНЯ_БЕЗ_ДВИЖЕНИЯ,
+			Sum(substr(пять_дней_без_движения, 1, (instr(пять_дней_без_движения, ''\'')-1))) ||''/''||Sum(substr(пять_дней_без_движения,(instr(пять_дней_без_движения, ''\'')+1))) as ПЯТЬ_ДНЕЙ_БЕЗ_ДВИЖЕНИЯ,
+			Sum(substr(более_пяти_дней_без_движения, 1, (instr(более_пяти_дней_без_движения, ''\'')-1))) ||''/''||Sum(substr(более_пяти_дней_без_движения,(instr(более_пяти_дней_без_движения, ''\'')+1))) as БОЛЕЕ_ПЯТИ_ДНЕЙ_БЕЗ_ДВИЖЕНИЯ
+			from STD_VIEW_TPA
+			where СКЛАД != ''*''
+			group by substr(склад,1,2)
+			order by 1')
+
+
+	SET @COUNT = 1
+    WHILE @COUNT <= @LISTWH
+	 BEGIN  
+        UPDATE STD_MRM_ETL_ORDERS_IN_WORK
+        SET 
+		ONE_DAY = #STD_VIEW_TPA.ONE_DAY,
+		TWO_DAY = #STD_VIEW_TPA.TWO_DAY,
+		FIVE_DAY = #STD_VIEW_TPA.FIVE_DAY,
+		MORE_DAY = #STD_VIEW_TPA.MORE_DAY
+       from #STD_VIEW_TPA
+	   where STD_MRM_ETL_ORDERS_IN_WORK.WRH = #STD_VIEW_TPA.WRH
+	   SET @COUNT = @COUNT + 1
+    END
+	drop table #STD_VIEW_TPA
 END
+
+
+
+select * from  STD_MRM_ETL_ORDERS_IN_WORK
