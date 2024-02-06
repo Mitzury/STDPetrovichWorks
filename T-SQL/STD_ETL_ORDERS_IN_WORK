@@ -1,3 +1,34 @@
+USE [ARTEM]
+GO
+
+INSERT INTO [dbo].[STD_MRM_ETL_ORDERS_IN_WORK]
+           ([WRH]
+           ,[AUFS]
+           ,[LINE_NOW]
+           ,[LINE_30MIN]
+           ,[LINE_15MIN]
+           ,[LINE_5MIN]
+           ,[USERS]
+           ,[ONE_DAY]
+           ,[TWO_DAY]
+           ,[FIVE_DAY]
+           ,[MORE_DAY])
+     VALUES
+           (<WRH, int,>
+           ,<AUFS, int,>
+           ,<LINE_NOW, int,>
+           ,<LINE_30MIN, int,>
+           ,<LINE_15MIN, int,>
+           ,<LINE_5MIN, int,>
+           ,<USERS, int,>
+           ,<ONE_DAY, nvarchar(10),>
+           ,<TWO_DAY, nvarchar(10),>
+           ,<FIVE_DAY, nvarchar(10),>
+           ,<MORE_DAY, nvarchar(10),>)
+GO
+
+#################################################
+
 DECLARE @_WRH INT,
 @_AUFS INT,
 @_LINE_NOW INT,
