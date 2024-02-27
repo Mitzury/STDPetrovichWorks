@@ -160,3 +160,25 @@ where art.artelmsel like '06%' or art.artelmsel like '07%')
 where count != 0
 order by count desc
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Поиск артикулов которые стоят в нескольких местах как ЖМ и вывод этих мест
+# # # # # # # # # # # # # # # # # # # # # # # # # # # 
+with data as (select plnam, benam, artid from PETR_S2_PDBA.pl_t where artid is not null order by artid)
+
+select plnam,benam, substr(artid, -11) from (
+select plnam,benam, artid, 
+case
+when artid = lag (artid,1) over (order by artid) then 1
+else 0 end as lag,
+case
+when artid = lead (artid,1) over (order by artid) then 1
+else 0 end as lead 
+from data
+)
+where 
+(lag = 1 and lead = 1)
+or
+(lag = 0 and lead = 1)
+or
+(lag = 1 and lead = 0)
