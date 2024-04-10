@@ -1,41 +1,50 @@
-select artid, artbez, 
-
-case artelmsel2
-when 'D' then 'D - Товар выводится'
-when 'DR' then 'D - Товар выводится, распродажа'
-when 'DV' then 'D - Товар выводится, возврат'
-when 'T1' then 'T1 - Товар под клиента'
-when 'T' then 'T - Товар под клиента'
-when 'A' then 'A - Основной товар'
-when 'AZ' then 'Az - Основной товар. Зимний период'
-when 'AL' then 'Al - Основной товар. Летний период'
-else artelmsel2 end as artelmsel2,
-listagg(plnam, ',') within group (order by artid) as plnam from (
-select distinct substr(bst.artid, 9,11) as artid, art.artbez, art.ArtElmSel2, pl.plnam
-from PETR_S3_PDBA.bst_t bst 
-left join PETR_S3_PDBA.art_t art on bst.artid = art.artid
-left join PETR_S3_PDBA.te_t te on te.tenam = bst.tenam
-left join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
-where 
-bst.artid != 'EMPTY' 
-and art.artklaabc = 1
-and pl.plknzezlres = 0
-and REGEXP_SUBSTR(pl.plnam, '^([0-9])+\w') = pl.benam
-and not  (te.lttnam = 'PF' and bst.bstmg = 1)
-and art.ArtElmSel IN (:WH)
-
-minus
-
-select distinct substr(bst.artid, 9,11) as artid, art.artbez,art.ArtElmSel2, pl.plnam
-from PETR_S3_PDBA.bst_t bst 
-left join PETR_S3_PDBA.art_t art on bst.artid = art.artid
-left join PETR_S3_PDBA.te_t te on te.tenam = bst.tenam
-left join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
-where 
-bst.artid != 'EMPTY' 
-and art.artklaabc = 1
-and pl.plknzezlres = 0
-and REGEXP_SUBSTR(pl.plnam, '^([0-9])+\w') = pl.benam
-and pl.elbnam like '%KOM%'
-and art.ArtElmSel IN (:WH))
-group by artid, artbez, artelmsel2
+select 
+    artid, artbez, 
+    case artelmsel2
+        when 'D' then 'D - Товар выводится'
+        when 'DR' then 'D - Товар выводится, распродажа'
+        when 'DV' then 'D - Товар выводится, возврат'
+        when 'T1' then 'T1 - Товар под клиента'
+        when 'T' then 'T - Товар под клиента'
+        when 'A' then 'A - Основной товар'
+        when 'AZ' then 'Az - Основной товар. Зимний период'
+        when 'AL' then 'Al - Основной товар. Летний период'
+    else artelmsel2 end as artelmsel2,
+listagg(plnam, ',') within group (order by artid) as plnam 
+    from (
+        select distinct 
+            substr(bst.artid, 9,11) as artid, 
+            art.artbez, 
+            art.ArtElmSel2,
+            pl.plnam
+        from PETR_S3_PDBA.bst_t bst 
+            left join PETR_S3_PDBA.art_t art on bst.artid = art.artid
+            left join PETR_S3_PDBA.te_t te on te.tenam = bst.tenam
+            left join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
+        where 
+            bst.artid != 'EMPTY' 
+            and art.artklaabc = 1
+            and pl.plknzezlres = 0
+            and REGEXP_SUBSTR(pl.plnam, '^([0-9])+\w') = pl.benam
+            and not  (te.lttnam = 'PF' and bst.bstmg = 1)
+            and art.ArtElmSel IN (:WH)
+        
+        minus
+        
+        select distinct 
+            substr(bst.artid, 9,11) as artid, 
+            art.artbez,
+            art.ArtElmSel2, 
+            pl.plnam
+        from PETR_S3_PDBA.bst_t bst 
+            left join PETR_S3_PDBA.art_t art on bst.artid = art.artid
+            left join PETR_S3_PDBA.te_t te on te.tenam = bst.tenam
+            left join PETR_S3_PDBA.pl_t pl on te.plnam = pl.plnam
+        where 
+            bst.artid != 'EMPTY' 
+            and art.artklaabc = 1
+            and pl.plknzezlres = 0
+            and REGEXP_SUBSTR(pl.plnam, '^([0-9])+\w') = pl.benam
+            and pl.elbnam like '%KOM%'
+            and art.ArtElmSel IN (:WH))
+    group by artid, artbez, artelmsel2
