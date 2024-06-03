@@ -1,22 +1,35 @@
-select 
-artnr, artbez,artelmsel, etbnam, artlng, artbre, arthoe,
-    case 
-        when artmgehwws = 'MTP' then ltt.artlttmgmax / 1000
-        else ltt.artlttmgmax end as artlttmgmax, ltt.artlttlng, ltt.artlttbre, ltt.artltthoe,
-    case artmgehwws
-        when 'NRL' then 'Рул.'
-        when 'MTP' then 'М.п.'
-        when 'PR' then 'Пара'
-        when 'PCE' then 'Шт.'
-        when 'BG' then 'Мешок'
-        when 'PA' then 'Упак.'
-        when 'LEF' then 'Лист'
-    else artmgehwws end as artmgehwws, 
-    case
-        when artklaabc = 1 then 'A'
-        when artklaabc = 2 then 'B'
-        when artklaabc = 3 then 'C'
-        when artklaabc = 4 then 'D'
-else to_char(artklaabc) end as artklaabc, 
-artelmsel2, artinfo8, artmhdtagezul, artmhdtagezulplus from PETR_S2_PDBA.art_t art
-left join PETR_S2_PDBA.artltt_t ltt on ltt.artid = art.artid and lttnam = 'PF'
+with data as (
+        select 
+            artnr, artbez, artelmsel, etbnam, artlng, artbre, arthoe,lttnam,
+                case 
+                    when artmgehwws = 'MTP' then ltt.artlttmgmax / 1000
+                    else ltt.artlttmgmax end as artlttmgmax, ltt.artlttlng, ltt.artlttbre, ltt.artltthoe,
+                case artmgehwws
+                    when 'NRL' then 'Рул.'
+                    when 'MTP' then 'М.п.'
+                    when 'PR' then 'Пара'
+                    when 'PCE' then 'Шт.'
+                    when 'BG' then 'Мешок'
+                    when 'PA' then 'Упак.'
+                    when 'LEF' then 'Лист'
+                else artmgehwws end as artmgehwws, 
+                case
+                    when artklaabc = 1 then 'A'
+                    when artklaabc = 2 then 'B'
+                    when artklaabc = 3 then 'C'
+                    when artklaabc = 4 then 'D'
+            else to_char(artklaabc) end as artklaabc, 
+            artelmsel2, artinfo8, artmhdtagezul, artmhdtagezulplus
+        from PETR_S3_PDBA.art_t art
+            left join PETR_S3_PDBA.artltt_t ltt on ltt.artid = art.artid and not regexp_like(lttnam, '[0-9]')
+        where art.artelmsel in (:benam))
+
+select datapf.artnr, datapf.artbez, datapf.artelmsel, datapf.artelmsel2, datapf.etbnam, datapf.artklaabc, datapf.artmgehwws, datapf.artlng, datapf.artbre, datapf.arthoe, datapf.artinfo8, datapf.artmhdtagezul, datapf.artmhdtagezulplus,
+datapf.lttnam pf, datapf.artlttlng, datapf.artlttbre, datapf.artltthoe, datapf.artlttmgmax, 
+datakb.lttnam kb, datakb.artlng lngkb, datakb.artbre brekb, datakb.arthoe hoekb, datakb.artlttmgmax mgmaxkb,
+datakm.lttnam km, datakm.artlng lngkm, datakm.artbre brekm, datakm.arthoe hoekm, datakm.artlttmgmax maxkm
+from data datapf 
+left join data datakb on datakb.artnr = datapf.artnr and datakb.lttnam = 'KB'
+left join data datakm on datakm.artnr = datapf.artnr and datakm.lttnam = 'KM'
+where datapf.lttnam = 'PF'
+order by KB, KM
