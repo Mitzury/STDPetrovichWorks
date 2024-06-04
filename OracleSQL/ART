@@ -1,9 +1,6 @@
 with data as (
         select 
-            artnr, artbez, artelmsel, etbnam, artlng, artbre, arthoe,lttnam,
-                case 
-                    when artmgehwws = 'MTP' then ltt.artlttmgmax / 1000
-                    else ltt.artlttmgmax end as artlttmgmax, ltt.artlttlng, ltt.artlttbre, ltt.artltthoe,
+            artid, artbez, artelmsel, etbnam, artlng, artbre, arthoe,
                 case artmgehwws
                     when 'NRL' then 'Рул.'
                     when 'MTP' then 'М.п.'
@@ -21,15 +18,15 @@ with data as (
             else to_char(artklaabc) end as artklaabc, 
             artelmsel2, artinfo8, artmhdtagezul, artmhdtagezulplus
         from PETR_S3_PDBA.art_t art
-            left join PETR_S3_PDBA.artltt_t ltt on ltt.artid = art.artid and not regexp_like(lttnam, '[0-9]')
         where art.artelmsel in (:benam))
-
-select datapf.artnr, datapf.artbez, datapf.artelmsel, datapf.artelmsel2, datapf.etbnam, datapf.artklaabc, datapf.artmgehwws, datapf.artlng, datapf.artbre, datapf.arthoe, datapf.artinfo8, datapf.artmhdtagezul, datapf.artmhdtagezulplus,
-datapf.lttnam pf, datapf.artlttlng, datapf.artlttbre, datapf.artltthoe, datapf.artlttmgmax, 
-datakb.lttnam kb, datakb.artlng lngkb, datakb.artbre brekb, datakb.arthoe hoekb, datakb.artlttmgmax mgmaxkb,
-datakm.lttnam km, datakm.artlng lngkm, datakm.artbre brekm, datakm.arthoe hoekm, datakm.artlttmgmax maxkm
-from data datapf 
-left join data datakb on datakb.artnr = datapf.artnr and datakb.lttnam = 'KB'
-left join data datakm on datakm.artnr = datapf.artnr and datakm.lttnam = 'KM'
-where datapf.lttnam = 'PF'
-order by KB, KM
+    
+select 
+substr(data.artid, -11) artnr, data.artbez, data.artelmsel, data.etbnam, data.artlng, data.artbre, data.arthoe, data.artmgehwws, data.artklaabc, data.artelmsel2, data.artinfo8, data.artmhdtagezul, data.artmhdtagezulplus,
+pfltt.lttnam pfltt, pfltt.artlttlng pflng, pfltt.artlttbre pfbre, pfltt.artltthoe pfhoe, pfltt.artlttmgmax pfmax,
+kbltt.lttnam kbltt, kbltt.artlttlng kblng, kbltt.artlttbre kbbre, kbltt.artltthoe kbhoe, kbltt.artlttmgmax kbmax,
+kmltt.lttnam kmltt, kmltt.artlttlng kmlng, kmltt.artlttbre kmbre, kmltt.artltthoe kmhoe, kmltt.artlttmgmax kmmax
+from data
+left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'PF') pfltt on pfltt.artid = data.artid and pfltt.lttnam = 'PF'
+left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'KB') kbltt on kbltt.artid = data.artid and kbltt.lttnam = 'KB'
+left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'KM') kmltt on kmltt.artid = data.artid and kmltt.lttnam = 'KM'
+order by kbltt, kmltt
