@@ -61,3 +61,36 @@ where sprakeynam in
 'MS.MdtSlsEntnahme.LButtonTaskList'
 )
 and spranam = 'ru'
+
+########################################
+# Перевод
+########################################
+UPDATE  petr_s2_pdba.sprakeypar_t
+set sprakeyparvalue =
+    case sprakeynam
+        when  'Short.OpTypWE' then 'ПринятоСтрок'
+        when  'Short.OpTypANFSTUCK' then 'ПеремещениеBvrsБлизко'
+        when  'Short.OpTypSCHOTTCLT' then 'Переборка под клиента'
+        when  'Short.OpTypINVENT' then 'Инвентаризация'
+        when  'Short.OpTypPRDPCKLIEF' then 'ОтборБезКонтроля'
+        when  'Short.OpTypPRDPACKSP' then 'ОтборСконтролем'
+        when  'Short.OpTypPRDKONTRL' then 'Контроль'
+        when  'Short.OpTypPRDPLATZ' then 'РазмещеноСтрок'
+        when  'Short.OpTypPALVERS' then 'Отгрузка'
+        when  'Short.OpTypTRANSTE' then 'Транспортировка ТЕ'
+        when  'Short.OpTypDFLT2' then 'ОтгрузкаИзЯчейки'
+        when  'Short.OpTypDFLT3' then 'ПеремещениеВvrsДалеко' 
+    end
+    where sprakeynam in
+       ('Short.OpTypWE',
+        'Short.OpTypANFSTUCK',
+        'Short.OpTypSCHOTTCLT',
+        'Short.OpTypINVENT',
+        'Short.OpTypPRDPCKLIEF',
+        'Short.OpTypPRDPACKSP',
+        'Short.OpTypPRDKONTRL',
+        'Short.OpTypPRDPLATZ',
+        'Short.OpTypPALVERS',
+        'Short.OpTypTRANSTE',
+        'Short.OpTypDFLT2',
+        'Short.OpTypDFLT3')
