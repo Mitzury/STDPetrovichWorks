@@ -1,0 +1,67 @@
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+
+public class PostRequestSender {
+
+    // Отправляет список JSON-запросов по очереди через POST
+    public void sendPostRequests(List<String> jsonRequests, String targetURL) {
+        for (String jsonRequest : jsonRequests) {
+            sendPostRequest(jsonRequest, targetURL);
+        }
+    }
+
+    // Отправляет одиночный JSON-запрос через POST
+    private void sendPostRequest(String jsonRequest, String targetURL) {
+        HttpURLConnection connection = null;
+
+        try {
+            // Создает URL-объект из строки URL
+            URL url = new URL(targetURL);
+
+            // Открывает соединение
+            connection = (HttpURLConnection) url.openConnection();
+
+            // Устанавливает метод POST для соединения
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json; utf-8");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Authorization", "Basic UFNJOlBTSQ==");
+            connection.setDoOutput(true);
+
+            // Записывает JSON-запрос в выходной поток соединения
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = jsonRequest.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            // Считывает ответ сервера (если нужно обработать ответ)
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        PostRequestSender sender = new PostRequestSender();
+        List<String> jsonRequests = List.of(
+
+               
+                
+
+                );
+
+        String targetURL = "http://10.14.228.138:30186/psiwms/rest/if/psirestifin/"; /*ДРЦ тест */
+
+        /* String targetURL = "http://10.14.229.26:30146/psiwms/rest/if/psirestifin/"; /*МРМ прод */
+        /* String targetURL = "http://10.14.228.144:30096/psiwms/rest/if/psirestifin/";  /*ДМТ прод */
+        sender.sendPostRequests(jsonRequests, targetURL);
+    }
+}
