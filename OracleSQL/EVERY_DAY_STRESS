@@ -1,0 +1,23 @@
+with wea as  (select count(weaid) weaid, dzins, sum (bumid) bumid,  sum(vol) vol from (
+                select weaid, dzins, count(bumid) bumid, sum(vol) vol from (
+                select wea.weaid, to_char(weadzwws, 'DD.MM.YYYY') dzins, bumid, (bummgbstkto * art.artvol) / 1000000000 as vol from PETR_S4_PDBA.wea_t wea
+                left join PETR_S4_PDBA.bum_t bum on wea.weaid = bum.weaid and bumgrundnam = 'Lvs.Bum.BstAnl'
+                left join PETR_S4_PDBA.art_t art on bum.artid = art.artid
+                where weadzwws is not null and weafsrsta = 600 and to_char(weadzwws, 'MM') = '07'
+                ) group by dzins, weaid
+                ) group by dzins),
+    auf as (select dzins, count (distinct tournam) tournam, sum(vol) avol, count(artid) artid from (
+                select tournam, to_char(aufdzftg, 'DD.MM.YYYY') dzins, aup.artid, (art.artvol * aupmgist  / 1000000000) vol from PETR_S4_PDBA.auf_t auf
+                left join PETR_S4_PDBA.aup_t aup on aup.aufid = auf.aufid and aupmgist != 0
+                left join PETR_S4_PDBA.art_t art on art.artid = aup.artid
+                where aufgrpnam is not null
+                and auffsrsta = 700
+                and aufknzstorno = 0
+                and to_char(aufdzftg, 'MM') = '07'
+                ) group by dzins)
+                
+
+select wea.dzins, weaid, bumid, vol, tournam, avol, artid from wea
+join auf on wea.dzins = auf.dzins 
+
+
