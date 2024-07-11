@@ -1,0 +1,46 @@
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
+public class tSender {
+    public static void sendMessag() {
+        String chatId = "-756062689";
+        String message = "Hello, this is a test message from my Java program!";
+
+        sendMessage(chatId, message);
+    }
+    private static void sendMessage(String chatId, String messageText) {
+        try {
+            URL url = new URL("https://api.telegram.org/bot5629369317:AAESEdW5bjumxWWtVw_cADYXzEb72dgGPSc/sendMessage");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json; utf-8");
+
+            String jsonInputString = String.format("{\"chat_id\":\"%s\",\"text\":\"%s\"}", chatId, messageText);
+
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                System.out.println("Message sent successfully!");
+            } else {
+                System.out.println("Failed to send message. Response code: " + responseCode);
+            }
+
+            connection.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Exception occurred while sending message");
+        }
+    }
+}
+
+
