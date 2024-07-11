@@ -1,0 +1,67 @@
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+
+public class SQL {
+
+public static void getConnection(String url, String user, String pass) {
+
+    Connection connection = null;
+    Statement statement = null;
+    ResultSet resultSet = null;
+
+    try {
+        // Регистрация драйвера JDBC.
+        Class.forName("oracle.jdbc.driver.OracleDriver");
+
+        // Установление соединения с базой данных.
+        connection = DriverManager.getConnection(url, user, pass);
+        System.out.println("Успешное подключение к базе данных Oracle");
+
+        // Создание объекта Statement для выполнения SQL-запросов.
+        statement = connection.createStatement();
+        // Пример SQL-запроса.
+        String sql = "SELECT * FROM STD_VIEW_T1";
+        resultSet = statement.executeQuery(sql);
+
+        ArrayList<String> oldData = new ArrayList<String>();
+        ArrayList<String> currentData = new ArrayList<String>();
+
+        // Обработка результатов запроса.
+        while (resultSet.next()) {
+            currentData.add(resultSet.getString(1));
+            System.out.println("Получил данные из БД " + resultSet.getString(1));
+        }
+
+        // Добавление только новых данных из currentData в oldData
+        for (String data : currentData) {
+            if (!oldData.contains(data)) {
+                oldData.add(data);
+            }
+        }
+        // Выводим результат для проверки
+        System.out.println("Старые данные после обновления:");
+        for (String data : oldData) {
+            System.out.println(data);
+        }
+
+
+
+    } catch (ClassNotFoundException e) {
+        System.err.println("Oracle JDBC Driver не найден");
+        e.printStackTrace();
+    } catch (SQLException e) {
+        System.err.println("Ошибка подключения к базе данных");
+        e.printStackTrace();
+    } finally {
+        try {
+            // Закрытие всех ресурсов.
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+}
