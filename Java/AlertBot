@@ -1,0 +1,61 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.SQLException;
+
+public class Main {
+
+    // URL для подключения к базе данных Oracle.
+    String URL = "jdbc:oracle:thin:@//10.14.229.47:1521/petrpdb";
+    // Пользователь базы данных.
+    String USER = "petrreadprod";
+    // Пароль для пользователя базы данных.
+    String PASSWORD = "ZjlGfi";
+
+
+    public static void main(String[] args) {
+
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            // Регистрация драйвера JDBC.
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+
+            // Установление соединения с базой данных.
+            connection = DriverManager.getConnection("jdbc:oracle:thin:@//10.14.229.47:1521/petrpdb", "petrreadprod", "ZjlGfi");
+            System.out.println("Успешное подключение к базе данных Oracle");
+
+            // Создание объекта Statement для выполнения SQL-запросов.
+            statement = connection.createStatement();
+            // Пример SQL-запроса.
+            String sql = "SELECT * FROM STD_VIEW_T1";
+            resultSet = statement.executeQuery(sql);
+
+            // Обработка результатов запроса.
+            while (resultSet.next()) {
+                System.out.println("Column 1: " + resultSet.getString("column1"));
+                System.out.println("Column 2: " + resultSet.getString("column2"));
+                System.out.println("Column 3: " + resultSet.getString("column3"));
+
+            }
+        } catch (ClassNotFoundException e) {
+            System.err.println("Oracle JDBC Driver не найден");
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.err.println("Ошибка подключения к базе данных");
+            e.printStackTrace();
+        } finally {
+            try {
+                // Закрытие всех ресурсов.
+                if (resultSet != null) resultSet.close();
+                if (statement != null) statement.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
