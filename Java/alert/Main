@@ -1,0 +1,27 @@
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
+
+public static void main(String[] args) throws InterruptedException, IOException {
+
+        HashMap<String, Credentials> credentialsMap = new HashMap<>();
+
+        // Заполнение данными
+        credentialsMap.put("мрм", new Credentials("jdbc:oracle:thin:@//10.14.229.47:1521/petrpdb", "petrreadprod", "ZjlGfi"));
+        credentialsMap.put("мрмтест", new Credentials("jdbc:oracle:thin:@//10.14.229.49:1521/petrpdb", "petrreadtst", "LTJgR8"));
+
+
+        Credentials creds = credentialsMap.get("мрмтест");
+
+System.out.println(creds.getUrl() + creds.getLogin() + creds.getPassword());
+
+while(true) {
+
+        tSender.sendMessag();
+        SQL.getConnection(creds.getUrl(), creds.getLogin(), creds.getPassword());
+        Thread.sleep(100000);
+}
+}
+
