@@ -6,15 +6,21 @@ with wea as  (select count(weaid) weaid, dzins, sum(bumid) bumid,  trunc(sum(vol
                 where weadzwws is not null and weafsrsta = 600 and to_char(weadzwws, 'MM') = '07'
                 ) group by dzins, weaid
                 ) group by dzins),
-    auf as (select dzins, count(tenam) artid,  trunc((sum(sumvol)/1000000000),2) avol, 
-            (select count(distinct tournam) from petr_s4_pdba.auf_t where to_char(dzins, 'DD.MM') between '02.07' and '03.07' and aufknzstorno = 0) tournam
-            from (select dzins, tenam, sum(bstmgnach) over (partition by tenam, artid), artvol, bstmgnach * artvol sumvol from
-                (select to_char(bsbw.dzins, 'DD.MM.YYYY') dzins, bsbw.tenam, bsbw.aufid, bsbw.artid, bsbw.bstmgnach, artvol from petr_s4_pdba.bsbw_t bsbw
-                    left join petr_s4_pdba.art_t art on bsbw.artid = art.artid
+    auf as (select dzins, count(distinct tenam) artid, trunc((sum(artvol)/1000000000),2) avol from (
+                select to_char(bsbw.dzins, 'DD.MM.YYYY') dzins, bsbw.tenam, bsbw.artid, bsbw.bstmgnach * artvol as artvol from petr_s4_pdba.bsbw_t bsbw
+                left join petr_s4_pdba.art_t art on bsbw.artid = art.artid
                 where bsbw.BsBwArt = 50
-                and to_char(bsbw.dzins, 'DD.MM.YYYY') between '02.07' and '03.07'))
-                group by dzins)
+                and to_char(bsbw.dzins, 'MM') = '07')
+                group by dzins
+                )
                         
 
-select wea.dzins, weaid, bumid, vol, tournam, avol, artid from wea
+select wea.dzins, weaid, bumid, vol, tournam.tournam, avol, artid from wea
 join auf on wea.dzins = auf.dzins 
+join (select distinct count (distinct tournam) over (partition by to_char(dzins, 'DD.MM.YYYY')) tournam, to_char(dzins, 'DD.MM.YYYY') dzins from petr_s4_pdba.auf_t where aufknzstorno = 0) tournam on tournam.dzins = wea.dzins
+
+
+
+
+
+
