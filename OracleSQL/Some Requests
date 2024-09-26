@@ -210,6 +210,7 @@ aufnr НомерВМС,
         when substr(realiz,0,4)='TOEH' then concat('ТОЭ', substr(realiz,5,8))
         when substr(realiz,0,4)='MAEH' then concat('МАЭ', substr(realiz,5,8))
         when substr(realiz,0,4)='MEEH' then concat('МЕЭ', substr(realiz,5,8))
+        when substr(realiz,0,6)='MJSHEH' then concat('МЩЭ', substr(realiz,7,8))
     else realiz end Номер1с,
 artnr Артикул, 
 aupbrmsel3 Склад, 
@@ -232,10 +233,10 @@ from (SELECT
             when art.artmgehwws = 'MTP' then art.artvol * (aup.aupmgist/1000) / 1000000000 
             else art.artvol * aup.aupmgist / 1000000000 end volumem_3
     FROM 
-        petr_s2_pdba.auf_t auf
-        LEFT JOIN petr_s2_pdba.aup_t aup ON auf.aufid = aup.aufid
-        LEFT JOIN petr_s2_pdba.art_t art ON art.artid = aup.artid
-        LEFT JOIN petr_s2_pdba.bsbw_t bsbw ON bsbw.aufid = auf.aufid 
+        petr_s3_pdba.auf_t auf
+        LEFT JOIN petr_s3_pdba.aup_t aup ON auf.aufid = aup.aufid
+        LEFT JOIN petr_s3_pdba.art_t art ON art.artid = aup.artid
+        LEFT JOIN petr_s3_pdba.bsbw_t bsbw ON bsbw.aufid = auf.aufid 
             AND aup.artid = bsbw.artid 
             AND bsbwart IN (60, 20)
     WHERE 
