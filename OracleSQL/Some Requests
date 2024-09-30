@@ -187,9 +187,17 @@ or
 ########################################
 # Отчет по реализациям за месяц начало отбора и конец отбора (отстрел на контроль)
 ########################################
-
 select 
 aufnr НомерВМС, 
+ CASE    WHEN Auanam = 'RTK' THEN 'КЛИЕНТ'
+            WHEN Auanam = 'RTD' THEN 'ДОСТАВКА'
+            WHEN Auanam = 'SPI' THEN 'СПИСАНИЕ'
+            WHEN Auanam = 'ZVP' THEN 'ПОСТАВЩИК'
+            WHEN Auanam = 'RVP' THEN 'ПЕРЕМЕЩЕНИЕ'
+            WHEN Auanam = 'RTZ' THEN 'ТЗ'
+            WHEN(Auanam = 'RTP' or Auanam = 'RTS') THEN 'СП'
+            WHEN Auanam = 'RTI' THEN 'ИЗ' 
+            END ТипЗаказа,
     case
         when substr(realiz,0,5)='TSHEH' then concat('ТШЭ', substr(realiz,6,8))
         when substr(realiz,0,4)='TREH' then concat('ТРЭ', substr(realiz,5,8))
@@ -210,6 +218,7 @@ aufnr НомерВМС,
         when substr(realiz,0,4)='TOEH' then concat('ТОЭ', substr(realiz,5,8))
         when substr(realiz,0,4)='MAEH' then concat('МАЭ', substr(realiz,5,8))
         when substr(realiz,0,4)='MEEH' then concat('МЕЭ', substr(realiz,5,8))
+        when substr(realiz,-4,3)='ZVP' then substr(realiz, 1, LENGTH(realiz) - 6)
         when substr(realiz,0,6)='MJSHEH' then concat('МЩЭ', substr(realiz,7,8))
     else realiz end Номер1с,
 artnr Артикул, 
@@ -220,9 +229,14 @@ weight_KG Вес,
 volumem_3 Объем
 from (SELECT 
         auf.aufnr,
-        case 
-            when auf.auanam in ('RTZ', 'RVP') then substr(auf.aufnr, 3, LENGTH(auf.aufnr) - 6)
-        else substr(auf.aufnr, 1, LENGTH(auf.aufnr) - 6) end realiz,
+        auf.auanam,
+        case
+        when substr(auf.aufnr, 1,2) = '00' and auf.auanam in ('RTZ', 'RVP') then substr(auf.aufnr, 3, LENGTH(auf.aufnr) - 8)
+        else auf.aufnr end realiz,
+       -- substr(auf.aufnr, 3, LENGTH(auf.aufnr) - 6) realiz,
+--        case 
+--            when auf.auanam in ('RTZ', 'RVP') then substr(auf.aufnr, 3, LENGTH(auf.aufnr) - 6)
+--        else substr(auf.aufnr, 1, LENGTH(auf.aufnr) - 6) end realiz,
         substr(aup.artid, - 11) artnr,
         aup.aupbrmsel3,
         to_char(MIN(CASE WHEN bsbw.bsbwart = 60 THEN bsbw.dzins END), 'HH24:MI:SS') pp,
