@@ -21,12 +21,17 @@ with data as (
         where art.artelmsel in (:benam))
     
 select 
-substr(data.artid, -11) artnr, data.artbez, data.artelmsel, data.etbnam, data.artlng, data.artbre, data.arthoe, data.artmgehwws, data.artklaabc, data.artelmsel2, data.artinfo8, data.artmhdtagezul, data.artmhdtagezulplus,
-pfltt.lttnam pfltt, pfltt.artlttlng pflng, pfltt.artlttbre pfbre, pfltt.artltthoe pfhoe, pfltt.artlttmgmax pfmax,
-kbltt.lttnam kbltt, kbltt.artlttlng kblng, kbltt.artlttbre kbbre, kbltt.artltthoe kbhoe, kbltt.artlttmgmax kbmax,
-kmltt.lttnam kmltt, kmltt.artlttlng kmlng, kmltt.artlttbre kmbre, kmltt.artltthoe kmhoe, kmltt.artlttmgmax kmmax
+    substr(data.artid, -11) artnr, 
+    data.artbez, 
+    data.artelmsel, 
+    data.etbnam, data.artlng, data.artbre, data.arthoe, data.artmgehwws, data.artklaabc, data.artelmsel2, data.artinfo8, data.artmhdtagezul, data.artmhdtagezulplus,
+    pfltt.lttnam pfltt, pfltt.artlttlng pflng, pfltt.artlttbre pfbre, pfltt.artltthoe pfhoe, pfltt.artlttmgmax pfmax,
+    kbltt.lttnam kbltt, kbltt.artlttlng kblng, kbltt.artlttbre kbbre, kbltt.artltthoe kbhoe, kbltt.artlttmgmax kbmax,
+    kmltt.lttnam kmltt, kmltt.artlttlng kmlng, kmltt.artlttbre kmbre, kmltt.artltthoe kmhoe, kmltt.artlttmgmax kmmax
 from data
-left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'PF') pfltt on pfltt.artid = data.artid and pfltt.lttnam = 'PF'
-left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'KB') kbltt on kbltt.artid = data.artid and kbltt.lttnam = 'KB'
-left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'KM') kmltt on kmltt.artid = data.artid and kmltt.lttnam = 'KM'
-order by kbltt, kmltt
+    left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'PF') pfltt on pfltt.artid = data.artid and pfltt.lttnam = 'PF'
+    left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'KB') kbltt on kbltt.artid = data.artid and kbltt.lttnam = 'KB'
+    left join (select artid, lttnam, artlttlng, artlttbre, artltthoe, artlttmgmax from PETR_S3_PDBA.artltt_t where lttnam = 'KM') kmltt on kmltt.artid = data.artid and kmltt.lttnam = 'KM'
+order by 
+kbltt, 
+kmltt
