@@ -1,16 +1,16 @@
 select aufnr, auanam, dzins, 
-case
-when aufdzftg is null then aufdzvssoll
-else aufdzftg end as aufdzftg, 
+    case
+        when aufdzftg is null then aufdzvssoll
+        else aufdzftg 
+    end as aufdzftg, 
 
 max, progresstime
-
-from(
-select auf.aufnr, auf.auanam, auf.dzins, auf.aufdzftg, auf.aufdzvssoll, max(bsbw.dzins) max, 
-regexp_substr(NUMTODSINTERVAL(max(bsbw.dzins)- auf.dzins, 'DAY'), '+\d{2} \d{2}:\d{2}:\d{2}') progresstime
-from PETR_S3_PDBA.auf_t auf
-left join PETR_S3_PDBA.bsbw_t bsbw on auf.aufid = bsbw.aufid
-where auf.dzins between :timestart and :timeend
-and plnamist like 'VRS%'
+from
+    (select auf.aufnr, auf.auanam, auf.dzins, auf.aufdzftg, auf.aufdzvssoll, max(bsbw.dzins) max, 
+        regexp_substr(NUMTODSINTERVAL(max(bsbw.dzins)- auf.dzins, 'DAY'), '+\d{2} \d{2}:\d{2}:\d{2}') progresstime
+    from PETR_S3_PDBA.auf_t auf
+        left join PETR_S3_PDBA.bsbw_t bsbw on auf.aufid = bsbw.aufid
+    where auf.dzins between :timestart and :timeend
+    and plnamist like 'VRS%'
 group by auf.aufnr, auf.auanam, auf.aufdzftg,auf.dzins,auf.aufdzvssoll
 order by  progresstime desc)
