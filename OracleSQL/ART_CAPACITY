@@ -1,42 +1,42 @@
-art:
+--art:
 select art.artnr, art.artbez, art.artelmsel, art.etbnam, art.artid, 
-case artmgeh 
-when 'NRL' then 'Рулон'
-when 'PCE' then 'Шт.' 
-when 'MTP' then 'М.п.' 
-when 'PA' then 'Пара' 
-else artmgeh end as artmgeh,
+    case artmgeh 
+        when 'NRL' then 'Рулон'
+        when 'PCE' then 'Шт.' 
+        when 'MTP' then 'М.п.' 
+        when 'PA' then 'Пара' 
+    else artmgeh end as artmgeh,
 txt as img from PETR_S3_PDBA.art_t art
             left join PETR_S3_PDBA.txt_t txt on txt.txtobjid = art.artid and txt.txttyp = 530
             where art.artnr = :artnr
 and ROWNUM = 1
 
-bst:
+--bst:
 select bst.artid, pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, pl.etbnam as pletb, 
-case when art.artmgeh = 'MTP' then bst.bstmg / 1000 else bst.bstmg end as bstmg, 
-case when art.artmgeh = 'MTP' then bst.bstmg / 1000 else bst.bstmg end as artlttmgmax from PETR_S3_PDBA.bst_t bst
-    join PETR_S3_PDBA.art_t art on bst.artid = art.artid
-    join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
-    join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam and plklanam = 'VIRTUELL' and regexp_like(pl.plnam, '^([0-9])+\w')
-    join PETR_S3_PDBA.artltt_t ltt on art.artid = ltt.artid and
-        (pl.pllng = ltt.artLTTlng
-        and pl.plbre = ltt.artLTTBRE
-        AND pl.plhoe = ltt.artLTTHOE)
-        where art.artnr = :artnr
+    case when art.artmgeh = 'MTP' then bst.bstmg / 1000 else bst.bstmg end as bstmg, 
+    case when art.artmgeh = 'MTP' then bst.bstmg / 1000 else bst.bstmg end as artlttmgmax from PETR_S3_PDBA.bst_t bst
+        join PETR_S3_PDBA.art_t art on bst.artid = art.artid
+        join PETR_S3_PDBA.te_t te on bst.tenam = te.tenam
+        join PETR_S3_PDBA.pl_t pl on pl.plnam = te.plnam and plklanam = 'VIRTUELL' and regexp_like(pl.plnam, '^([0-9])+\w')
+        join PETR_S3_PDBA.artltt_t ltt on art.artid = ltt.artid and
+            (pl.pllng = ltt.artLTTlng
+            and pl.plbre = ltt.artLTTBRE
+            AND pl.plhoe = ltt.artLTTHOE)
+            where art.artnr = :artnr
 
-empty:
+--empty:
 select distinct pl.plnam, pl.pllng||'*'||pl.plbre||'*'||pl.plhoe as plltt, case when art.artmgeh = 'MTP' then artltt.artlttmgmax  / 1000 else artltt.artlttmgmax end as artlttmgmax from PETR_S3_PDBA.pl_t pl
-left join PETR_S3_PDBA.te_t te on pl.plnam = te.plnam
-left join PETR_S3_PDBA.bst_t bst on bst.tenam = te.tenam
-join PETR_S3_PDBA.artltt_t artltt on artlttlng = pl.pllng and artltt.artlttbre = pl.plbre and artltt.artltthoe = pl.plhoe
-left join PETR_S3_PDBA.art_t art on art.artid = artltt.artid
+    left join PETR_S3_PDBA.te_t te on pl.plnam = te.plnam
+    left join PETR_S3_PDBA.bst_t bst on bst.tenam = te.tenam
+    join PETR_S3_PDBA.artltt_t artltt on artlttlng = pl.pllng and artltt.artlttbre = pl.plbre and artltt.artltthoe = pl.plhoe
+    left join PETR_S3_PDBA.art_t art on art.artid = artltt.artid
 where 
-pl.plknzspreinl = 0
-and pl.plklanam = 'VIRTUELL'
-and pl.etbnam = '0161'
-and bst.artid = 'EMPTY'
-and artltt.artid like '%00001016569'
+    pl.plknzspreinl = 0
+    and pl.plklanam = 'VIRTUELL'
+    and pl.etbnam = '0161'
+    and bst.artid = 'EMPTY'
+    and artltt.artid like '%00001016569'
 
-lttnam:
+--lttnam:
 select lttnam, artlttlng||'*'||artlttbre||'*'||artltthoe as artltt from PETR_S3_PDBA.artltt_t where artid like '%00001016569'
 and regexp_like(lttnam, '[a-z]')
