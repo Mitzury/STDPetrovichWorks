@@ -1,0 +1,36 @@
+select 
+    pl.plnam, pl.etbnam, pl.plklanam,
+    sum(bstmg) over (partition by artnr) sumbyart,
+        case
+            when plklanam = 'PAL' then pl.plkapmax * artltt.artlttmgmax
+            when plklanam = 'VIRTUELL' then artltt2.artlttmgmax
+        end as kapmax,
+    art.artnr, art.artbez, art.artinfo11 celevoy, art.artinfo12 emkost,
+    bst.bstmg,
+    artltt.artlttmgmax kratnost,
+        sum(case
+            when plklanam = 'PAL' then pl.plkapmax * artltt.artlttmgmax
+            when plklanam = 'VIRTUELL' then artltt2.artlttmgmax
+        end) over (partition by artnr) maxkapmax,
+    bsbw_sum.rashod,
+    bsbw_sum.counttransact,
+    art.artinfo12 / EXTRACT(DAY FROM DATE (:DATEEND - :DATESTART))
+from petr_s2_pdba.bst_t bst
+    left join petr_s2_pdba.te_t te on bst.tenam = te.tenam
+    left join petr_s2_pdba.pl_t pl on te.plnam = pl.plnam
+    left join petr_s2_pdba.art_t art on art.artid = bst.artid
+    --left join petr_s2_pdba.res_t res on bst.bstid = res.resid
+    left join petr_s2_pdba.artltt_t artltt on artltt.artid = art.artid and artltt.lttnam = 'PF'
+    left join petr_s2_pdba.artltt_t artltt2 on artltt2.artid = art.artid and artltt2.lttnam = te.lttnam
+    left join (select artid, sum(bstmgnach) as rashod, count (distinct aufid) counttransact
+                from petr_s2_pdba.bsbw_t
+                where 
+                    lgonamnach = 'WA' 
+                    and bsbwart = 50 
+                    and to_char(dzins, 'DD.MM.YYYY') between :DATESTART and :DATEEND
+                group by artid) bsbw_sum on bsbw_sum.artid = bst.artid
+where 
+        bst.artid != 'EMPTY'
+        and art.artnr = '00000101655'
+        and regexp_like(pl.benam, '^([0-9]){2}\D{1}')
+        and bst.aufid is null
